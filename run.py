@@ -6,13 +6,15 @@ import untitled
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton,
                              QVBoxLayout, QWidget, QMessageBox, QCheckBox)
 from SAVE_INFO import JsonDataSaver
-from PyQt5.QtCore import QTimer
-from PyQt5.QtCore import Qt as Qt_State
+from PyQt5.QtCore import (QTimer, QSettings, Qt, QObject)
 from Mouse_move import mouse_move
 import pydirectinput
 import pyautogui
 import pandas.io.clipboard as cb
 import random
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
+#导入保存控件状态类
+from saveQtWidgetsState import StateSaver
 
 class pages_window(untitled.Ui_MainWindow, QMainWindow):
     def __init__(self):
@@ -23,10 +25,14 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
 
         # 计时器开始后每1s触发一次timeout
         self.timer.timeout.connect(self.update_counter)
-        self.IsFirstGaiZao = False  # 是否第一次调用改造函数，涉及按住shift连续点击
+        # 是否第一次调用改造函数，涉及按住shift连续点击
+        self.IsFirstGaiZao = False
         self.laytime = 0.1 #延时时间设置
 
-
+        # 初始化状态保存器
+        self.state_saver = StateSaver(self)
+        #循环退出是否由杀死鼠标激活
+        self.kill_window = False
         # 设置信号与槽
 
         self.mod1.textChanged.connect(self.mod1Save)
@@ -35,11 +41,13 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.mod4.textChanged.connect(self.mod4Save)
         self.mod5.textChanged.connect(self.mod5Save)
         self.mod6.textChanged.connect(self.mod6Save)
+        self.mod7.textChanged.connect(self.mod7Save)
+        self.mod8.textChanged.connect(self.mod8Save)
+        self.mod9.textChanged.connect(self.mod9Save)
         self.item_name.textChanged.connect(self.item_nameSave)
         self.alteration.textChanged.connect(self.alterationSave)
         self.augmentation.textChanged.connect(self.augmentationSave)
         self.item_posi.textChanged.connect(self.item_posi_Save)
-        self.checkBox_1.stateChanged.connect(self.saveCheckBoxState)
 
         # 获取特定文本框历史内容
         # self.primeText_plainTextEdit0 = self.loadText('plainTextEdit0')
@@ -50,6 +58,9 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.primeText_mod4 = self.loadText('mod4')
         self.primeText_mod5 = self.loadText('mod5')
         self.primeText_mod6 = self.loadText('mod6')
+        self.primeText_mod7 = self.loadText('mod7')
+        self.primeText_mod8 = self.loadText('mod8')
+        self.primeText_mod9 = self.loadText('mod9')
         #改造位置
         self.primeText_alteration = self.loadText('alteration')
         # 增幅位置
@@ -67,6 +78,9 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.mod4.setPlainText(self.primeText_mod4)
         self.mod5.setPlainText(self.primeText_mod5)
         self.mod6.setPlainText(self.primeText_mod6)
+        self.mod7.setPlainText(self.primeText_mod7)
+        self.mod8.setPlainText(self.primeText_mod8)
+        self.mod9.setPlainText(self.primeText_mod9)
         self.alteration.setPlainText(self.primeText_alteration)
         self.augmentation.setPlainText(self.primeText_augmentation)
         self.item_posi.setPlainText(self.primeText_item_posi)
@@ -82,12 +96,24 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.augmentation_x, self.augmentation_y = map(int, self.primeText_augmentation.split(','))
         self.item_x, self.item_y = map(int, self.primeText_item_posi.split(','))
 
+        #洗多件装备时，控制位置的变量
+        self.items_position = 0
         #目标词缀信息的数组
         self.mods_info = []
         #加载信息
         self.load_mods_info()
         #装备信息
         self.item_info = ''
+        # 恢复之前的状态
+        self.state_saver.restore_all_states(self)
+
+        # 连接自动保存
+        self.state_saver.connect_auto_save(self)
+
+    def closeEvent(self, event):
+        """窗口关闭时保存所有状态"""
+        self.state_saver.save_all_states(self)
+        super().closeEvent(event)
 
     def start_countdown(self):
         # 计时器开始工作，每1s，触发一次timeout，timeout调用update_counter
@@ -108,32 +134,6 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
             self.execute_mouse_action()
             self.pushButton_4.setEnabled(True)
 
-    def saveCheckBoxState(self, state):
-        """
-        保存复选框当前状态
-        :param state:
-        :return:
-        """
-        ## 获取发送信号的复选框对象
-        sender = self.sender()
-        #QCheckBox 通过import导入
-        #isinstance 确保触发信号的类是Qcheckbox，过滤其他信号
-        if isinstance(sender, QCheckBox):
-            if state == Qt_State.Checked:
-                # 选中
-                checkbox_text = sender.text()
-                checkbox_state = state
-                # 调用类方法保存值
-                data = {f'{checkbox_text}': checkbox_state}
-                save_text = JsonDataSaver("DataFile")
-                save_text.save_data(data)
-                pass
-            else:
-                # 未选中
-
-                pass
-
-
     def execute_mouse_action(self):
         """执行鼠标操作序列
             检查是否第一次使用改造，是，更改self.IsFirstGaiZao为True，执行后续操作
@@ -144,10 +144,13 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
             self.pushButton_4.setEnabled(False)
             QTimer.singleShot(100, lambda: [
 
+                # 将词缀编入数组
+                self.load_mods_info(),
+                #开始洗装备
                 self.xi_zhuangbei(),
 
                 # print('1'),
-                # QMessageBox.information(None, "Title", "检测到鼠标离开工作区域,程序中断"),
+
 
                 self.pushButton_4.setEnabled(True)  # 重新启用按钮
             ])
@@ -249,6 +252,12 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
             self.mods_info.append(self.primeText_mod5)
         if self.primeText_mod6 != '':
             self.mods_info.append(self.primeText_mod6)
+        if self.primeText_mod7 != '':
+            self.mods_info.append(self.primeText_mod7)
+        if self.primeText_mod8 != '':
+            self.mods_info.append(self.primeText_mod8)
+        if self.primeText_mod9 != '':
+            self.mods_info.append(self.primeText_mod9)
         # print(self.mods_info)
 
     def xi_zhuangbei(self):
@@ -258,14 +267,18 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         匹配
         :return:
         """
+        a = [(1430, 590), (1541, 593), (1626, 596), (1729, 598), (1840, 598)]
         while True:
             #保险
             if self.kill_while_with_mouse():
                 self.label_4.setText("检测到鼠标离开工作区域,程序中断")
                 # QMessageBox.information(None, "Title", "检测到鼠标离开工作区域,程序中断")
                 pyautogui.keyUp('shift')
+                pyautogui.keyUp('ctrl')
+                self.items_position = 0
                 self.IsFirstGaiZao = False
                 time.sleep(2)
+                self.kill_window = True
                 break
 
             self.get_item_info()
@@ -341,7 +354,46 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
                     # break
                 else:#不需要增幅直接改造
                     self.use_gaizao()
+        #检查是否要洗多件装备，是的话更换装备，再次调用他自己
+        if self.kill_window:
+            #检查循环退出是否由杀死窗口提出
+            self.kill_window = False
+        else:
+            if self.checkBox_3.isChecked():
+                if self.items_position == 5:
+                    self.items_position = 0
+                else:
+                    # 鼠标移动，点击
+                    # 通过全局变量self.items_position控制鼠标点击位置
+                    # 释放shift
+                    pyautogui.keyUp('shift')
 
+                    # 重置改造状态函数
+                    self.IsFirstGaiZao = False
+                    # 按下ctrl
+                    pyautogui.keyDown('ctrl')
+                    # 将装备放回背包
+                    pydirectinput.click(button="left")
+
+                    x, y = a[self.items_position]
+                    self.items_position += 1
+                    if self.items_position == 6:
+                        self.items_position = 0
+                    # 鼠标移动至下一个位置
+
+                    pyautogui.moveTo(x, y)
+                    time.sleep(1)
+                    pydirectinput.click(button="left")
+
+                    mouse_move.mouse_mov(self, 300, 454)
+                    pyautogui.keyUp('ctrl')
+                    # 调用自己
+                    self.xi_zhuangbei()
+
+
+        #重置状态
+        self.items_position = 0
+        self.IsFirstGaiZao = False
     def kill_while_with_mouse(self):
         """
                     if kill_while_with_mouse() == True:
@@ -413,6 +465,7 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
 
     def alterationSave(self):
         """
+        保存改造位置，当改造位置改变时触发
         将id与内容保存下来
         :return:
         """
@@ -539,6 +592,42 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         save_text = JsonDataSaver("DataFile")
         # 调用类方法保存值
         data = {'mod6': text}
+        save_text.save_data(data)
+    def mod7Save(self):
+        """
+        将id与内容保存下来
+        :return:
+        """
+        # 获取文本作为值
+        text = self.mod7.toPlainText()
+        # 初始化保存数据的类，并给出键
+        save_text = JsonDataSaver("DataFile")
+        # 调用类方法保存值
+        data = {'mod7': text}
+        save_text.save_data(data)
+    def mod8Save(self):
+        """
+        将id与内容保存下来
+        :return:
+        """
+        # 获取文本作为值
+        text = self.mod8.toPlainText()
+        # 初始化保存数据的类，并给出键
+        save_text = JsonDataSaver("DataFile")
+        # 调用类方法保存值
+        data = {'mod8': text}
+        save_text.save_data(data)
+    def mod9Save(self):
+        """
+        将id与内容保存下来
+        :return:
+        """
+        # 获取文本作为值
+        text = self.mod9.toPlainText()
+        # 初始化保存数据的类，并给出键
+        save_text = JsonDataSaver("DataFile")
+        # 调用类方法保存值
+        data = {'mod9': text}
         save_text.save_data(data)
 
     def display_page1(self):
