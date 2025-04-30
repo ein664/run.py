@@ -454,8 +454,115 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.items_position = 0
         self.IsFirstGaiZao = False
 
-    def if_need_zengfu(self):
+    def _xi_zhuangbei(self):
+        """
+        鼠标移至装备
+        获取装备信息
+        匹配
+        :return:
+        """
+        a = [(1430, 590), (1541, 593), (1626, 596), (1729, 598), (1840, 598)]
+        b = [(1381, 590),(1426, 596),(1485, 594),(1537, 594), (1584, 596),(1637, 597),(1683, 597),(1736, 597),(1785, 597),(1844, 602), (1877, 597),(1335, 696),(1381, 692),(1427, 692),(1483, 694),(1528, 694),(1574, 695),(1635, 696),(1676, 693), (1777, 694),(1823, 698),(1862, 698)]
+        # 保险
+        if self.kill_while_with_mouse():
+            self.progessOver()
 
+        # 获取装备信息
+        self.get_item_info()
+        # 检测装备词缀是否为目标词缀
+        if self.check_item():
+            print('目标词缀已得到')
+            pyautogui.keyUp('shift')
+            self.IsFirstGaiZao = False
+
+        # 在装备没有目标词缀时
+        # 否则检查装备名是否已填
+        elif self.item_name_text == '':
+            # 装备名未填
+            print('空装备名')
+
+        # 在装备没有目标词缀时
+        # 装备名已填，继续确认需不需要增幅
+        else:
+            self.item_info = self.item_info.split('\r\n')
+            # 检查是否要空前增幅
+            if self.checkBox_1.isChecked():
+                # 已确认需要空前增幅
+                # 检查是否空前物品信息列表一行一行开抽
+
+                for line in self.item_info:
+                    if self.item_name_text in line:
+                        # 检查物品名是否在该行
+                        line = line.strip()  # 移除首尾空白字符
+                        index = line.find(self.item_name_text)
+                        # 检查前面是否有非空白字符
+                        front_empty = (index == 0)
+
+                        # 检查后面是否有非空白字符
+                        back_empty = (index + len(self.item_name_text) == len(line))
+                        if front_empty:  # 确认空前
+                            self.use_zengfu()  # 上增幅
+                        elif back_empty:  # 不空前就检查是否空后
+                            # 确认空后
+                            if self.checkBox_2.isChecked():  # 确认是否要空后增幅
+                                # 确认空后且需要空后增幅
+                                self.use_zengfu()
+                                continue
+                            else:  # 确认空后但不需要空后增幅
+                                self.use_gaizao()
+                                continue
+                        else:  # 既不空前也不空后
+                            self.use_gaizao()
+                            continue
+                # for循环跑完都没发现物品名称
+                # print("检查物品名是否正确，装备信息中找不到物品名称")
+                # break
+            # 不需要空前增幅
+            # 检查是否要空后增幅
+            elif self.checkBox_2.isChecked():
+                # 已确认要空后增幅
+                # 开始抽物品信息
+                for line in self.item_info:
+                    # 物品名在该行
+                    if self.item_name_text in line:
+                        line = line.strip()  # 移除首尾空白字符
+                        index = line.find(self.item_name_text)
+                        # 检查后面是否有非空白字符
+                        back_empty = (index + len(self.item_name_text) == len(line))
+                        if back_empty:
+                            # 确认空后
+                            self.use_zengfu()
+                            # 结束本轮循环，防止触发后面洗多件装备；开启新一轮循环匹配词缀
+
+                        else:  # 需要空后增幅，但装备不空后
+                            self.use_gaizao()
+                            # 结束本轮循环，防止触发后面洗多件装备；开启新一轮循环匹配词缀
+
+
+                # print("2检查物品名是否正确，装备信息中找不到物品名称")
+                # break
+            else:  # 不需要增幅直接改造
+                self.use_gaizao()
+
+
+
+        #检查是否要洗多件装备，是的话更换装备，再次调用他自己
+        if self.kill_window:
+            #由鼠标位置触发，检查循环退出是否由杀死窗口提出
+            self.kill_window = False
+        else:
+            if self.checkBox_3.isChecked():
+                self.oneXsix(a)
+            elif self.checkBox_4.isChecked():
+                self.twoXtwelve(b)
+
+
+        #重置状态
+        self.items_position = 0
+        self.IsFirstGaiZao = False
+
+    def if_need_zengfu(self):
+        pass
 
     def progessOver(self):
         self.label_4.setText("检测到鼠标离开工作区域,程序中断")
