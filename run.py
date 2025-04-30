@@ -6,7 +6,7 @@ import untitled
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton,
                              QVBoxLayout, QWidget, QMessageBox, QCheckBox)
 from SAVE_INFO import JsonDataSaver
-from PyQt5.QtCore import (QTimer, QSettings, Qt, QObject)
+from PyQt5.QtCore import (QTimer, QSettings, Qt, QObject,pyqtSignal)
 from Mouse_move import mouse_move
 import pydirectinput
 import pyautogui
@@ -27,69 +27,112 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.timer.timeout.connect(self.update_counter)
         # 是否第一次调用改造函数，涉及按住shift连续点击
         self.IsFirstGaiZao = False
-        self.laytime = 0.1 #延时时间设置
+        self.laytime = 0.05 #延时时间设置
 
         # 初始化状态保存器
         self.state_saver = StateSaver(self)
         #循环退出是否由杀死鼠标激活
         self.kill_window = False
         # 设置信号与槽
+        for i in range(1, 10):
+            # print(i)
+            mod = getattr(self, f"mod{i}_1")
+            mod.textChanged.connect(self.modSave)
+            mod.setPlainText(self.loadText(f"mod{i}_1"))
 
-        self.mod1.textChanged.connect(self.mod1Save)
-        self.mod2.textChanged.connect(self.mod2Save)
-        self.mod3.textChanged.connect(self.mod3Save)
-        self.mod4.textChanged.connect(self.mod4Save)
-        self.mod5.textChanged.connect(self.mod5Save)
-        self.mod6.textChanged.connect(self.mod6Save)
-        self.mod7.textChanged.connect(self.mod7Save)
-        self.mod8.textChanged.connect(self.mod8Save)
-        self.mod9.textChanged.connect(self.mod9Save)
-        self.item_name.textChanged.connect(self.item_nameSave)
+            mod = getattr(self, f"mod{i}_1_1")
+            mod.textChanged.connect(self.modSave)
+            mod.setPlainText(self.loadText(f"mod{i}_1_1"))
+
+            mod = getattr(self, f"mod{i}_2")
+            mod.textChanged.connect(self.modSave)
+            mod.setPlainText(self.loadText(f"mod{i}_2"))
+
+            mod = getattr(self, f"mod{i}_2_1")
+            mod.textChanged.connect(self.modSave)
+            mod.setPlainText(self.loadText(f"mod{i}_2_1"))
+
+            mod = getattr(self, f"mod{i}_3")
+            mod.textChanged.connect(self.modSave)
+            mod.setPlainText(self.loadText(f"mod{i}_3_1"))
+
+            if i <= 4:
+                mod = getattr(self, f"item_name_{i}")
+                mod.textChanged.connect(self.modSave)
+                mod.setPlainText(self.loadText(f"item_name_{i}"))
+
+                mod = getattr(self, f"item_name_{i}_1")
+                mod.textChanged.connect(self.modSave)
+                mod.setPlainText(self.loadText(f"item_name_{i}_1"))
+
+        #洗药剂
+        for i in range(1, 15):
+            mod = getattr(self, f"mod{i}_4")
+            mod.textChanged.connect(self.modSave)
+            mod.setPlainText(self.loadText(f"mod{i}_4"))
+
+            mod = getattr(self, f"mod{i}_4_1")
+            mod.textChanged.connect(self.modSave)
+            mod.setPlainText(self.loadText(f"mod{i}_4_1"))
+
         self.alteration.textChanged.connect(self.alterationSave)
         self.augmentation.textChanged.connect(self.augmentationSave)
         self.item_posi.textChanged.connect(self.item_posi_Save)
 
+
         # 获取特定文本框历史内容
         # self.primeText_plainTextEdit0 = self.loadText('plainTextEdit0')
 
-        self.primeText_mod1 = self.loadText('mod1')
-        self.primeText_mod2 = self.loadText('mod2')
-        self.primeText_mod3 = self.loadText('mod3')
-        self.primeText_mod4 = self.loadText('mod4')
-        self.primeText_mod5 = self.loadText('mod5')
-        self.primeText_mod6 = self.loadText('mod6')
-        self.primeText_mod7 = self.loadText('mod7')
-        self.primeText_mod8 = self.loadText('mod8')
-        self.primeText_mod9 = self.loadText('mod9')
+        # self.primeText_mod1 = self.loadText('mod1')
+        # self.primeText_mod2 = self.loadText('mod2')
+        # self.primeText_mod3 = self.loadText('mod3')
+        # self.primeText_mod4 = self.loadText('mod4')
+        # self.primeText_mod5 = self.loadText('mod5')
+        # self.primeText_mod6 = self.loadText('mod6')
+        # self.primeText_mod7 = self.loadText('mod7')
+        # self.primeText_mod8 = self.loadText('mod8')
+        # self.primeText_mod9 = self.loadText('mod9')
         #改造位置
         self.primeText_alteration = self.loadText('alteration')
         # 增幅位置
         self.primeText_augmentation = self.loadText('augmentation')
         # 装备位置
         self.primeText_item_posi = self.loadText('item_posi')
-        self.primeText_item_name = self.loadText('item_name')
+        # self.primeText_item_name = self.loadText('item_name')
 
 
         # 设置文本框内容
         # self.plainTextEdit0.setPlainText(self.primeText_plainTextEdit0)
-        self.mod1.setPlainText(self.primeText_mod1)
-        self.mod2.setPlainText(self.primeText_mod2)
-        self.mod3.setPlainText(self.primeText_mod3)
-        self.mod4.setPlainText(self.primeText_mod4)
-        self.mod5.setPlainText(self.primeText_mod5)
-        self.mod6.setPlainText(self.primeText_mod6)
-        self.mod7.setPlainText(self.primeText_mod7)
-        self.mod8.setPlainText(self.primeText_mod8)
-        self.mod9.setPlainText(self.primeText_mod9)
+        # self.mod1.setPlainText(self.primeText_mod1)
+        # self.mod2.setPlainText(self.primeText_mod2)
+        # self.mod3.setPlainText(self.primeText_mod3)
+        # self.mod4.setPlainText(self.primeText_mod4)
+        # self.mod5.setPlainText(self.primeText_mod5)
+        # self.mod6.setPlainText(self.primeText_mod6)
+        # self.mod7.setPlainText(self.primeText_mod7)
+        # self.mod8.setPlainText(self.primeText_mod8)
+        # self.mod9.setPlainText(self.primeText_mod9)
         self.alteration.setPlainText(self.primeText_alteration)
         self.augmentation.setPlainText(self.primeText_augmentation)
         self.item_posi.setPlainText(self.primeText_item_posi)
-        self.item_name.setPlainText(self.primeText_item_name)
-        self.item_name_text = self.item_name.toPlainText()
+        # self.item_name.setPlainText(self.primeText_item_name)
+        # self.item_name_2.setPlainText(self.loadText('item_name_2'))
+        # self.item_name_3.setPlainText(self.loadText('item_name_3'))
+        # self.item_name_4.setPlainText(self.loadText('item_name_4'))
+        # self.item_name_5.setPlainText(self.loadText('item_name_5'))
+        # self.item_name_6.setPlainText(self.loadText('item_name_6'))
+        # self.item_name_7.setPlainText(self.loadText('item_name_7'))
+        # self.item_name_8.setPlainText(self.loadText('item_name_8'))
+        self.item_name_text = ''
+
         # 按钮
         self.counter = 3
         # 按钮4关联计时器实现点击按钮，按钮禁用，按钮上数字递减
+        #按钮4 鼠标移动 是洗装备启动按钮
         self.pushButton_4.clicked.connect(self.start_countdown)
+        self.pushButton_8.clicked.connect(self.start_countdown)
+        self.pushButton_9.clicked.connect(self.start_countdown)
+        self.pushButton_10.clicked.connect(self.start_countdown)
         self.pushButton_3.clicked.connect(self.pushButton_3_action)
         # 提取数字并赋值
         self.alteration_x, self.alteration_y = map(int, self.primeText_alteration.split(','))
@@ -100,12 +143,23 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.items_position = 0
         #目标词缀信息的数组
         self.mods_info = []
-        #加载信息
-        self.load_mods_info()
+        #加载信息 2025/4/16 改成按完按钮才加载对应信息
+        # self.load_mods_info()
         #装备信息
         self.item_info = ''
         # 恢复之前的状态
         self.state_saver.restore_all_states(self)
+
+        #用于储存触发洗装备按钮的名称 不同tab中的 鼠标移动
+        self.widget_name = ''
+        #按钮对象
+        self.widget = ''
+        # #用于确认是否空前增幅
+        # self.emptyPrefix = False
+        # #用于确认是否空后增幅
+        # self.emptysuffix = False
+        # #用于确认是否洗多件装备
+        # self.many_item = False
 
         # 连接自动保存
         self.state_saver.connect_auto_save(self)
@@ -116,23 +170,70 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         super().closeEvent(event)
 
     def start_countdown(self):
+        #获取触发计时器的组件名称
+        self.widget = QApplication.instance().sender()
+        self.widget_name = self.widget.objectName()
+
         # 计时器开始工作，每1s，触发一次timeout，timeout调用update_counter
-        self.pushButton_4.setEnabled(False)  # 禁用按钮防止重复点击
+        self.widget.setEnabled(False)  # 禁用按钮防止重复点击
         self.timer.start(1000)  # 1000毫秒=1秒
 
     def update_counter(self):
         # 当counter<0 时，计时器停止工作
-        self.pushButton_4.setText('鼠标移动' + '(' + str(self.counter) + ')')
+
+        self.widget.setText('鼠标移动' + '(' + str(self.counter) + ')')
         self.counter -= 1
 
         if self.counter < 0:
             self.counter = 3
             self.timer.stop()
-            self.pushButton_4.setText('鼠标移动')
-            # self.cmd_run()
-            # 鼠标移动事件
+            self.widget.setText('鼠标移动')
+
+
+            match self.widget_name:
+                case 'pushButton_4':
+                    #获取该页装备名称
+                    self.item_name_text = self.item_name_1.toPlainText()
+                    self.mods_info = []
+
+                    # 将词缀编入数组
+                    for i in range(1, 10):
+                        self.get_mods_info(f"mod{i}")
+                    self.label_69.setText(str(self.mods_info))
+
+
+                case 'pushButton_8':
+                    self.item_name_text = self.item_name_3.toPlainText()
+                    # 将词缀编入数组
+                    self.mods_info = []
+                    for i in range(1, 10):
+                        self.get_mods_info(f"mod{i}_2")
+                    self.label_68.setText(str(self.mods_info))
+
+
+                case 'pushButton_9':
+                    self.item_name_text = self.item_name_5.toPlainText()
+                    # 将词缀编入数组
+                    self.mods_info = []
+                    for i in range(1, 10):
+                        self.get_mods_info(f"mod{i}_3")
+                    self.label_67.setText(str(self.mods_info))
+
+
+                case 'pushButton_10':
+                    self.item_name_text = self.item_name_7.toPlainText()
+                    # 将词缀编入数组
+                    self.mods_info = []
+                    for i in range(1, 10):
+                        self.get_mods_info(f"mod{i}_4")
+                    self.label_66.setText(str(self.mods_info))
+                case _:
+                    print('baocuo')
+
             self.execute_mouse_action()
-            self.pushButton_4.setEnabled(True)
+            self.widget_name = ''
+
+            self.widget.setEnabled(True)
 
     def execute_mouse_action(self):
         """执行鼠标操作序列
@@ -141,23 +242,21 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         """
         try:
             # 禁用按钮防止重复点击
-            self.pushButton_4.setEnabled(False)
+            self.widget.setEnabled(False)
             QTimer.singleShot(100, lambda: [
 
-                # 将词缀编入数组
-                self.load_mods_info(),
+
                 #开始洗装备
                 self.xi_zhuangbei(),
 
                 # print('1'),
 
-
-                self.pushButton_4.setEnabled(True)  # 重新启用按钮
+                self.widget.setEnabled(True)  # 重新启用按钮
             ])
 
         except Exception as e:
             QMessageBox.critical(self, "错误", f"操作失败: {str(e)}")
-            self.pushButton_4.setEnabled(True)
+            self.widget.setEnabled(True)
     def use_gaizao(self):
         """
         检查是否第一次使用改造，是，更改self.IsFirstGaiZao为True，执行后续操作
@@ -235,30 +334,17 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
             print(modifier_name)  # 打印错误词缀
         return item_name, copy_results
 
-    def load_mods_info(self):
+    def get_mods_info(self, widget):
         """
         获取非空词缀栏信息并编成数组
         :return:
         """
-        if self.primeText_mod1 != '':
-            self.mods_info.append(self.primeText_mod1)
-        if self.primeText_mod2 != '':
-            self.mods_info.append(self.primeText_mod2)
-        if self.primeText_mod3 != '':
-            self.mods_info.append(self.primeText_mod3)
-        if self.primeText_mod4 != '':
-            self.mods_info.append(self.primeText_mod4)
-        if self.primeText_mod5 != '':
-            self.mods_info.append(self.primeText_mod5)
-        if self.primeText_mod6 != '':
-            self.mods_info.append(self.primeText_mod6)
-        if self.primeText_mod7 != '':
-            self.mods_info.append(self.primeText_mod7)
-        if self.primeText_mod8 != '':
-            self.mods_info.append(self.primeText_mod8)
-        if self.primeText_mod9 != '':
-            self.mods_info.append(self.primeText_mod9)
-        # print(self.mods_info)
+        Text_Edit_Obj = getattr(self, widget)
+        text = Text_Edit_Obj.toPlainText()
+        if text != '':
+            self.mods_info.append(text)
+
+
 
     def xi_zhuangbei(self):
         """
@@ -268,32 +354,27 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         :return:
         """
         a = [(1430, 590), (1541, 593), (1626, 596), (1729, 598), (1840, 598)]
+        b = [(1381, 590),(1426, 596),(1485, 594),(1537, 594), (1584, 596),(1637, 597),(1683, 597),(1736, 597),(1785, 597),(1844, 602), (1877, 597),(1335, 696),(1381, 692),(1427, 692),(1483, 694),(1528, 694),(1574, 695),(1635, 696),(1676, 693), (1777, 694),(1823, 698),(1862, 698)]
         while True:
             #保险
             if self.kill_while_with_mouse():
-                self.label_4.setText("检测到鼠标离开工作区域,程序中断")
-                # QMessageBox.information(None, "Title", "检测到鼠标离开工作区域,程序中断")
-                pyautogui.keyUp('shift')
-                pyautogui.keyUp('ctrl')
-                self.items_position = 0
-                self.IsFirstGaiZao = False
-                time.sleep(2)
-                self.kill_window = True
+                self.progessOver()
                 break
-
+            #获取装备信息
             self.get_item_info()
-
+            #检测装备词缀是否为目标词缀
             if self.check_item():
                 print('目标词缀已得到')
                 pyautogui.keyUp('shift')
                 self.IsFirstGaiZao = False
                 break
+            # 在装备没有目标词缀时
             #否则检查装备名是否已填
             elif self.item_name_text == '':
                 #装备名未填
                 print('空装备名')
                 continue
-
+            #在装备没有目标词缀时
             #装备名已填，继续确认需不需要增幅
             else:
                 self.item_info = self.item_info.split('\r\n')
@@ -344,9 +425,11 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
                             if back_empty:
                                 # 确认空后
                                 self.use_zengfu()
+                                #结束本轮循环，防止触发后面洗多件装备；开启新一轮循环匹配词缀
                                 continue
                             else:  # 需要空后增幅，但装备不空后
                                 self.use_gaizao()
+                                #结束本轮循环，防止触发后面洗多件装备；开启新一轮循环匹配词缀
                                 continue
 
 
@@ -354,46 +437,102 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
                     # break
                 else:#不需要增幅直接改造
                     self.use_gaizao()
+
+
         #检查是否要洗多件装备，是的话更换装备，再次调用他自己
         if self.kill_window:
-            #检查循环退出是否由杀死窗口提出
+            #由鼠标位置触发，检查循环退出是否由杀死窗口提出
             self.kill_window = False
         else:
             if self.checkBox_3.isChecked():
-                if self.items_position == 5:
-                    self.items_position = 0
-                else:
-                    # 鼠标移动，点击
-                    # 通过全局变量self.items_position控制鼠标点击位置
-                    # 释放shift
-                    pyautogui.keyUp('shift')
-
-                    # 重置改造状态函数
-                    self.IsFirstGaiZao = False
-                    # 按下ctrl
-                    pyautogui.keyDown('ctrl')
-                    # 将装备放回背包
-                    pydirectinput.click(button="left")
-
-                    x, y = a[self.items_position]
-                    self.items_position += 1
-                    if self.items_position == 6:
-                        self.items_position = 0
-                    # 鼠标移动至下一个位置
-
-                    pyautogui.moveTo(x, y)
-                    time.sleep(1)
-                    pydirectinput.click(button="left")
-
-                    mouse_move.mouse_mov(self, 300, 454)
-                    pyautogui.keyUp('ctrl')
-                    # 调用自己
-                    self.xi_zhuangbei()
+                self.oneXsix(a)
+            elif self.checkBox_4.isChecked():
+                self.twoXtwelve(b)
 
 
         #重置状态
         self.items_position = 0
         self.IsFirstGaiZao = False
+
+    def if_need_zengfu(self):
+
+
+    def progessOver(self):
+        self.label_4.setText("检测到鼠标离开工作区域,程序中断")
+        # QMessageBox.information(None, "Title", "检测到鼠标离开工作区域,程序中断")
+        pyautogui.keyUp('shift')
+        pyautogui.keyUp('ctrl')
+        self.items_position = 0
+        self.IsFirstGaiZao = False
+        time.sleep(2)
+        self.kill_window = True
+
+    def twoXtwelve(self, posi):
+        """
+        操纵鼠标在背包中移动并点击的函数
+        :param posi:位置数组
+        :return:
+        """
+        if self.items_position == len(posi):
+            self.items_position = 0
+        else:
+            # 鼠标移动，点击
+            # 通过全局变量self.items_position控制鼠标点击位置
+            # 释放shift
+            pyautogui.keyUp('shift')
+
+            # 重置改造状态函数
+            self.IsFirstGaiZao = False
+            # 按下ctrl
+            pyautogui.keyDown('ctrl')
+            # 将装备放回背包
+            pydirectinput.click(button="left")
+
+            x, y = posi[self.items_position]
+            self.items_position += 1
+            if self.items_position == 6:
+                self.items_position = 0
+            # 鼠标移动至下一个位置
+
+            pyautogui.moveTo(x, y)
+            time.sleep(0.2)
+            pydirectinput.click(button="left")
+
+            mouse_move.mouse_mov(self, 300, 454)
+            pyautogui.keyUp('ctrl')
+            # 调用自己
+            self.xi_zhuangbei()
+    def oneXsix(self,posi):
+        if self.items_position == len(posi):
+            self.items_position = 0
+        else:
+            # 鼠标移动，点击
+            # 通过全局变量self.items_position控制鼠标点击位置
+            # 释放shift
+            pyautogui.keyUp('shift')
+
+            # 重置改造状态函数
+            self.IsFirstGaiZao = False
+            # 按下ctrl
+            pyautogui.keyDown('ctrl')
+            # 将装备放回背包
+            pydirectinput.click(button="left")
+
+            x, y = posi[self.items_position]
+            self.items_position += 1
+            if self.items_position == 6:
+                self.items_position = 0
+            # 鼠标移动至下一个位置
+
+            pyautogui.moveTo(x, y)
+            time.sleep(0.2)
+            pydirectinput.click(button="left")
+
+            mouse_move.mouse_mov(self, 300, 454)
+            pyautogui.keyUp('ctrl')
+            # 调用自己
+            self.xi_zhuangbei()
+
     def kill_while_with_mouse(self):
         """
                     if kill_while_with_mouse() == True:
@@ -404,6 +543,7 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         鼠标移动到区域外, 返回True
         :return: True
         """
+        self.widget_name = ''
         kx, ky = pyautogui.position()
         # if kx < 325 or ky < 159:
         #     return True
@@ -504,131 +644,28 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         save_text.save_data(data)
 
     #item_nameSave
-    def item_nameSave(self):
-        """
-        将id与内容保存下来
-        :return:
-        """
-        # 获取文本作为值
-        text = self.item_name.toPlainText()
-        # 初始化保存数据的类，并给出键
-        save_text = JsonDataSaver("DataFile")
-        # 调用类方法保存值
-        data = {'item_name': text}
-        save_text.save_data(data)
-    def mod1Save(self):
-        """
-        将id与内容保存下来
-        :return:
-        """
-        # 获取文本作为值
-        text = self.mod1.toPlainText()
-        # 初始化保存数据的类，并给出键
-        save_text = JsonDataSaver("DataFile")
-        # 调用类方法保存值
-        data = {'mod1': text}
-        save_text.save_data(data)
 
-    def mod2Save(self):
-        """
-        将id与内容保存下来
-        :return:
-        """
-        # 获取文本作为值
-        text = self.mod2.toPlainText()
-        # 初始化保存数据的类，并给出键
-        save_text = JsonDataSaver("DataFile")
-        # 调用类方法保存值
-        data = {'mod2': text}
-        save_text.save_data(data)
 
-    def mod3Save(self):
+    def modSave(self):
         """
         将id与内容保存下来
         :return:
         """
+        #获取被触发的组件对象
+        button = QApplication.instance().sender()
+        #获取组件对象名称
+        # button_name = button.objectName()
         # 获取文本作为值
-        text = self.mod3.toPlainText()
-        # 初始化保存数据的类，并给出键
-        save_text = JsonDataSaver("DataFile")
-        # 调用类方法保存值
-        data = {'mod3': text}
-        save_text.save_data(data)
-
-    def mod4Save(self):
-        """
-        将id与内容保存下来
-        :return:
-        """
-        # 获取文本作为值
-        text = self.mod4.toPlainText()
-        # 初始化保存数据的类，并给出键
-        save_text = JsonDataSaver("DataFile")
-        # 调用类方法保存值
-        data = {'mod4': text}
-        save_text.save_data(data)
-
-    def mod5Save(self):
-        """
-        将id与内容保存下来
-        :return:
-        """
-        # 获取文本作为值
-        text = self.mod5.toPlainText()
-        # 初始化保存数据的类，并给出键
-        save_text = JsonDataSaver("DataFile")
-        # 调用类方法保存值
-        data = {'mod5': text}
-        save_text.save_data(data)
-
-    def mod6Save(self):
-        """
-        将id与内容保存下来
-        :return:
-        """
-        # 获取文本作为值
-        text = self.mod6.toPlainText()
-        # 初始化保存数据的类，并给出键
-        save_text = JsonDataSaver("DataFile")
-        # 调用类方法保存值
-        data = {'mod6': text}
-        save_text.save_data(data)
-    def mod7Save(self):
-        """
-        将id与内容保存下来
-        :return:
-        """
-        # 获取文本作为值
-        text = self.mod7.toPlainText()
-        # 初始化保存数据的类，并给出键
-        save_text = JsonDataSaver("DataFile")
-        # 调用类方法保存值
-        data = {'mod7': text}
-        save_text.save_data(data)
-    def mod8Save(self):
-        """
-        将id与内容保存下来
-        :return:
-        """
-        # 获取文本作为值
-        text = self.mod8.toPlainText()
-        # 初始化保存数据的类，并给出键
-        save_text = JsonDataSaver("DataFile")
-        # 调用类方法保存值
-        data = {'mod8': text}
-        save_text.save_data(data)
-    def mod9Save(self):
-        """
-        将id与内容保存下来
-        :return:
-        """
-        # 获取文本作为值
-        text = self.mod9.toPlainText()
-        # 初始化保存数据的类，并给出键
-        save_text = JsonDataSaver("DataFile")
-        # 调用类方法保存值
-        data = {'mod9': text}
-        save_text.save_data(data)
+        try:
+            #获取text文本
+            text = button.toPlainText()
+            # 初始化保存数据的类，并给出键
+            save_text = JsonDataSaver("DataFile")
+            # 调用类方法保存值
+            data = {button.objectName(): text}
+            save_text.save_data(data)
+        except:
+            print('modSave-wrong')
 
     def display_page1(self):
         self.stackedWidget.setCurrentIndex(0)
