@@ -75,7 +75,7 @@ class ColorPickerApp(QMainWindow):
         monitor_layout.addWidget(self.color_display, alignment=Qt.AlignCenter)
 
         # 颜色值显示
-        self.color_value_label = QLabel("程序未激活")
+        self.color_value_label = QLabel("")
         self.color_value_label.setAlignment(Qt.AlignCenter)
         self.color_value_label.setStyleSheet("font-size: 14px; color: gray;")
         monitor_layout.addWidget(self.color_value_label)
@@ -161,7 +161,7 @@ class ColorPickerApp(QMainWindow):
 
         pos = pyautogui.position()
         self.current_pos = (pos.x, pos.y)
-        self.coord_label.setText(f"坐标: ({pos.x}, {pos.y})")
+        self.coord_label.setText(f"({pos.x}, {pos.y})")
 
         try:
             # 获取所有屏幕的完整截图
@@ -203,7 +203,7 @@ class ColorPickerApp(QMainWindow):
                 y = (1 - b / 255 - k) / (1 - k)
             text = f"CMYK: ({c * 100:.1f}%, {m * 100:.1f}%, {y * 100:.1f}%, {k * 100:.1f}%)"
 
-        self.color_value_label.setText(text)
+        # self.color_value_label.setText(text)
 
     def change_color_format(self, format_name):
         """更改颜色表示格式"""
