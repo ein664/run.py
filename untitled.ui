@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1003</width>
-    <height>693</height>
+    <width>1006</width>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,13 +18,13 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>0</y>
-      <width>591</width>
+      <y>10</y>
+      <width>571</width>
       <height>651</height>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>4</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -2588,6 +2588,118 @@
       </widget>
      </widget>
     </widget>
+    <widget class="QWidget" name="tab_5">
+     <attribute name="title">
+      <string>图金</string>
+     </attribute>
+     <widget class="QWidget" name="widget" native="true">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>180</y>
+        <width>511</width>
+        <height>241</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
+      <widget class="QFrame" name="frame_square">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>20</y>
+         <width>461</width>
+         <height>191</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QFrame#frame_square {
+    background-color: transparent;
+    border: 1px solid black;  /* 初始灰色边框 */
+}</string>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::Box</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <widget class="QPlainTextEdit" name="itemPrice">
+        <property name="geometry">
+         <rect>
+          <x>250</x>
+          <y>60</y>
+          <width>161</width>
+          <height>31</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QPlainTextEdit" name="itemName1">
+        <property name="geometry">
+         <rect>
+          <x>40</x>
+          <y>60</y>
+          <width>161</width>
+          <height>31</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_17">
+        <property name="geometry">
+         <rect>
+          <x>260</x>
+          <y>40</y>
+          <width>54</width>
+          <height>12</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>价格</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_16">
+        <property name="geometry">
+         <rect>
+          <x>40</x>
+          <y>40</y>
+          <width>54</width>
+          <height>12</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>名称</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton_5">
+        <property name="geometry">
+         <rect>
+          <x>180</x>
+          <y>130</y>
+          <width>75</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>添加新物品</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton_6">
+        <property name="geometry">
+         <rect>
+          <x>290</x>
+          <y>130</y>
+          <width>75</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>PushButton</string>
+        </property>
+       </widget>
+      </widget>
+     </widget>
+    </widget>
    </widget>
    <widget class="QFrame" name="frame">
     <property name="geometry">
@@ -2820,7 +2932,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1003</width>
+     <width>1006</width>
      <height>23</height>
     </rect>
    </property>

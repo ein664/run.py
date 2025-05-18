@@ -15,7 +15,7 @@ import random
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
 #导入保存控件状态类
 from saveQtWidgetsState import StateSaver
-
+from kou_tu_jin import Kou_tu_jin
 class pages_window(untitled.Ui_MainWindow, QMainWindow):
     def __init__(self):
         super(pages_window, self).__init__()
@@ -104,7 +104,8 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.primeText_item_posi = self.loadText('item_posi')
         # self.primeText_item_name = self.loadText('item_name')
 
-
+        #价格表数据文件路径
+        self.file_path_pattern = fr'C:\PythonCode\poe\items_price.txt'
         # 设置文本框内容
         # self.plainTextEdit0.setPlainText(self.primeText_plainTextEdit0)
 
@@ -123,6 +124,8 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.pushButton_9.clicked.connect(self.start_countdown)
         self.pushButton_10.clicked.connect(self.start_countdown)
         self.pushButton_3.clicked.connect(self.pushButton_3_action)
+        #pushButton_5添加新物品
+        self.pushButton_5.clicked.connect(self.add_new_items)
         # 提取数字并赋值
         self.alteration_x, self.alteration_y = map(int, self.primeText_alteration.split(','))
         self.augmentation_x, self.augmentation_y = map(int, self.primeText_augmentation.split(','))
@@ -149,6 +152,44 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.c = [(1337, 592), (1427, 587), (1525, 591), (1623, 596), (1725, 591), (1831, 593), (1334, 698), (1450, 691), (1532, 687), (1627, 686), (1719, 689), (1831, 684)]
         # 连接自动保存
         self.state_saver.connect_auto_save(self)
+
+        self.kou_tu_jin = Kou_tu_jin()
+        self.kou_tu_jin.call_D_signal.connect(self.set_red_border)
+
+        self.pushButton_6.clicked.connect(self.Tedef)
+
+    def Tedef(self):
+
+        self.kou_tu_jin.sent_signal()
+
+    def add_new_items(self):
+        itemName = self.itemName1.toPlainText()
+        itemPrice = self.itemPrice.toPlainText()
+
+        with open(self.file_path_pattern, 'a', encoding='utf-8') as big_file:
+            big_file.write(itemName + ':' + itemPrice + '\n')
+        self.itemName1.setPlainText('')
+        self.itemPrice.setPlainText('')
+        self.set_black_border()
+
+
+    def set_red_border(self):
+        #用于图金页边框变红
+        self.frame_square.setStyleSheet("""
+            QFrame#frame_square {
+                background-color: transparent;
+                border: 3px solid red;
+            }
+        """)
+
+    def set_black_border(self):
+        #用于图金页边框变黑
+        self.frame_square.setStyleSheet("""
+               QFrame#frame_square {
+                   background-color: transparent;
+                   border: 1px solid black;
+               }
+           """)
 
     def closeEvent(self, event):
         """窗口关闭时保存所有状态"""

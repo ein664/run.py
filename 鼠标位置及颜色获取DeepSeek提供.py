@@ -7,6 +7,7 @@ from PyQt5.QtGui import QColor, QPixmap, QPainter, QKeySequence
 import pyautogui
 from PIL import ImageGrab
 import colorsys
+from PyQt5 import QtWidgets, QtGui
 
 
 class ColorPickerApp(QMainWindow):
@@ -225,9 +226,10 @@ class ColorPickerApp(QMainWindow):
         """记录当前信息"""
         if not self.is_active:
             return
-
-        info = f"{self.coord_label.text()}, {self.color_value_label.text()}\n"
-        self.record_text.append(info)
+        #{self.color_value_label.text()}\n
+        info = f"{self.coord_label.text()}, "
+        self.record_text.insertPlainText(info)
+        self.record_text.moveCursor(QtGui.QTextCursor.End)
 
     def clear_records(self):
         """清空记录"""
