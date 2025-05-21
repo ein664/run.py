@@ -65,6 +65,7 @@ class TuJin(QThread):
         self.item_price = 0
         self.buy_times = 0#记录一个物品购买几次的参数
         self.item_Class= ''
+        self.prime_text = ''#用于存储剪贴板原始内容
 
     def reset_pamar(self):
         self.artifact_type = 0
@@ -79,6 +80,7 @@ class TuJin(QThread):
         # 购买频率，连续三个空格停止购买，四孔共振俩空格
         self.purchase_frequency = 0
         self.current_status = '参数已重置'
+        self.prime_text = ''
 
     def sent_signal(self):
         #发射信号用的函数
@@ -115,9 +117,7 @@ class TuJin(QThread):
         """
         #空字符串为假
 
-        if self.copy_results[0] =='清除剪贴板儿':
-            self.current_status = '获取物品信息失败'
-            return False
+
         if self.copy_results:
 
             for result in self.copy_results:
@@ -147,20 +147,15 @@ class TuJin(QThread):
                 return True
         return False
     def get_item_number(self):
-        for a_result in self.copy_results:
-            #正则结果以list结果返回['xxx'],先list[0]取值,再进行int转换格式
-            item_number = re.findall(r"Stack Size: (\d+)/", a_result)#a_result格式是字符串，不是列表
-            if item_number:
+        #正则空格敏感
+        item_number = re.findall(r"Stack Size: (\d+)/", self.prime_text)
+        # a_result格式是字符串，不是列表
+        if item_number:
+            self.item_number = int(item_number[0])
+        else:
+            self.item_number = 1
 
-                try:
-                    self.item_number = int(item_number[0])
-                except:
-                    print('get_item_number报错')
-                    item_number = item_number[0].replace(',', '')
-                    self.item_number = int(item_number)
-                self.current_status = '已获取堆叠数量'
 
-        return False
 
     def get_item_level(self):
         for a_result in self.copy_results:
@@ -183,7 +178,10 @@ class TuJin(QThread):
                         key, value = line.strip().split(':')
                         self.lookup[key] = value
                     except Exception:
+                        print(Exception)
                         print('载入数据文件报错')
+                        self.stop()
+                        return True
 
         self.current_status = '已载入数据包'
         return False
@@ -218,8 +216,14 @@ class TuJin(QThread):
         """
         #ctrl+c复制
         self.simulate_keyboard_ctrl_c()
+        self.prime_text = cb.paste()
         #获取剪贴板并返回
         self.copy_results = self.get_clipboard()
+        if self.copy_results[0] == '清除剪贴板儿':
+            self.current_status = '获取物品信息失败'
+            return False
+        self.get_item_info_fail_times_2 = 0
+        self.get_item_info_fail_times = 0
         self.current_status = '已获取物品信息'
         return False
     def get_clipboard(self):
@@ -247,14 +251,14 @@ class TuJin(QThread):
             self.current_status = '未找到物品价格'
             return False
 
-        self.item_price = result
+        self.item_price = float(result)
         self.current_status = '已取得物品价格'
         return False
 
     def add_item_and_price(self):
         ##添加物品价格后重新运行程序
         #向主线程发送信号，使其出现红框提示添加新的物品及价格
-        ZMailObject('未知物品需要添加价格')
+        # ZMailObject('未知物品需要添加价格')
         self.sent_signal()
         #阻塞线程运行
         self.paused = True
@@ -296,6 +300,7 @@ class TuJin(QThread):
         time.sleep(self.duration_time)
         # 获取剪切板
         a = self.get_clipboard()[0]
+        # print(a)
         self.artifact_number = int(a)
 
     def get_artifact_type(self):
@@ -320,6 +325,7 @@ class TuJin(QThread):
             # ZMailObject()  # 发邮件
             input('<get_artifact_type>报错, 未匹配到先祖通货类型')
     def record_price(self):
+        #物品名，价格，堆叠，神器数目，神器种类
         with open(r'C:\PythonCode\pyqt\Record_price.txt', 'a', encoding='utf-8') as big_file:
             big_file.write(self.item_name + ':' + str(self.item_price) +' '+'堆叠:'+str(self.item_number)+' '
                            +'神器:'+str(self.artifact_number)+' '+'神器种类:'+str(self.artifact_type)+'\n')
@@ -330,40 +336,36 @@ class TuJin(QThread):
 
         #算出每个神器约等于多少c，神器数量除以通货总价 大于某个值就买
 
-        # print(type(self.item_number))
         self.item_price = float(self.item_price)
-        # print(type(self.item_price))
         self.get_item_number()
+        #记录价格
+        self.record_price()
         items_total_price = self.item_number*self.item_price
-        # print('items_total_price:'+str(items_total_price))
         if items_total_price == 0:
             artifact_convert_chaos= 0
         else:#35=1c 0.0028
             artifact_convert_chaos = round(items_total_price / self.artifact_number, 4)
-        # print('buy_is_or_not')
+        # print('\n'+'item_name:'+self.item_name)
+        # print('artifact_convert_chaos:'+str(artifact_convert_chaos))
+        # print('self.lesser_artifiact:'+str(self.lesser_artifiact))
+        # print('self.artifact_type:' + str(self.artifact_type))
         match self.artifact_type:
             case 1:
+                # print('1')
                 if artifact_convert_chaos >= self.lesser_artifiact:
                     self.current_status = '购买'
-                    self.record_price()
-                    return False
             case 2:
                 if artifact_convert_chaos >= self.greater_artifiact:
                     self.current_status = '购买'
-                    self.record_price()
-                    return False
             case 3:
                 if artifact_convert_chaos >= self.exceptional_artifiact:
                     self.current_status = '购买'
-                    self.record_price()
-                    return False
             case 4:
                 if artifact_convert_chaos >= self.grand_artifiact:
                     self.current_status = '购买'
-                    self.record_price()
-                    return False
-
-        self.current_status = '放弃购买'
+        if self.current_status != '购买':
+            self.current_status = '放弃购买'
+        # print(self.current_status)
         return False
 
     def buy(self):
@@ -401,7 +403,7 @@ class TuJin(QThread):
             case 3:
                 self.buy_times = 0
                 print('包满了')
-                ZMailObject('包满了')
+                # ZMailObject('包满了')
                 self.current_status = '包满了'
                 return False
             case _:
@@ -482,18 +484,26 @@ class TuJin(QThread):
     def delete_special_item(self):
         if 'Support Gems' in self.item_Class or 'Skill Gems' in self.item_Class:
             self.current_status = '技能石'
+            return False
         if 'Rings' in self.item_Class:
             self.current_status = '裂隙戒指'
+            return False
         if 'Scarab' in self.item_name:
             self.current_status = '圣甲虫'
+            return False
         if 'Map' in self.item_name:
             self.current_status = '地图'
+            return False
         if 'Oil' in self.item_name:
             self.current_status = '圣油'
+            return False
         if 'Incubator' in self.item_name:
             self.current_status = '孕育石'
+            return False
         if 'Cluster' in self.item_name:
             self.current_status = '星团珠宝'
+            return False
+        self.current_status = '没有需要特殊处理的物品'
         return False
 
 
@@ -547,6 +557,7 @@ class TuJin(QThread):
         adds_number = int(adds_line.split()[1])
 
         if item_level >=84 and adds_number >=11:
+            print('应该购买大星团')
             self.current_status = '已取得物品价格'
             self.item_price = 150
             return False
@@ -564,8 +575,7 @@ class TuJin(QThread):
         if self.item_name == 'Enhance Support':
             self.current_status = '购买'
             return False
-        self.current_status = '购买完毕'
-        return False
+
         #不是赋予、启蒙、增幅，则根据品质换算c
         text = cb.paste()
         text_quality = [line for line in text.split('\n') if 'Quality:' in line][0]
@@ -573,6 +583,8 @@ class TuJin(QThread):
         self.item_name = 'Gemcutter\'s Prism'
         self.find_item_price()
         self.item_price = (self.item_price / 20) * quality
+        # print('gem_quality:'+str(quality))
+        # print('gem_pirce:'+str(self.item_price))
         self.current_status = '已取得物品价格'
         return False
 
@@ -588,7 +600,9 @@ class TuJin(QThread):
             '获取物品信息': self.get_item_info,
             '抽取物品名称': self.get_item_name,
             '获取物品种类': self.get_item_Class,
+
             '排除特殊种类物品':self.delete_special_item,
+
             '查找物品价格': self.find_item_price,
             '添加物品及价格':self.add_item_and_price,
             '获取神器种类及数量':self.get_artifact_type_and_number,
@@ -599,7 +613,6 @@ class TuJin(QThread):
             '加载价格表':self.load_date_file,
             '更新价格表':self.reload_date_file,
             '重置参数':self.reset_pamar,
-            '排除特殊种类物品':self.delete_special_item,
             '处理裂隙戒指':self.deal_breach_ring,
             '处理圣甲虫':self.deal_scarab,
             '处理地图':self.deal_map,
@@ -622,6 +635,7 @@ class TuJin(QThread):
 
 
             m = self._determine_action()  # 提取判断逻辑到单独方法
+            # print(m)
             handler = action_handlers.get(m)
             if not handler:
                 print(f"未知操作: {m}")
@@ -662,6 +676,7 @@ class TuJin(QThread):
             '已取得物品名称':'获取物品种类',
             '已获取物品种类': '排除特殊种类物品',
 
+            '没有需要特殊处理的物品':'查找物品价格',
             '裂隙戒指':'处理裂隙戒指',
             '圣甲虫':'处理圣甲虫',
             '地图': '处理地图',
@@ -670,7 +685,8 @@ class TuJin(QThread):
             '星团珠宝':'处理星团珠宝',
             '技能石':'处理技能石',
 
-            '未找到物品价格':'添加物品及价格','已取得物品价格':'获取神器种类及数量',
+            '未找到物品价格':'添加物品及价格',
+            '已取得物品价格':'获取神器种类及数量',
             '已获取神器种类及数量': '判断是否购买',
             '已添加物品及价格':'更新价格表',
             '价格表已更新':'移至下一个物品',
