@@ -364,3 +364,39 @@ Jeweller's Orb:0.2 堆叠:10 神器:56 神器种类:1
 Orb of Alteration:0.3 堆叠:5 神器:36 神器种类:1
 Scarab of Divinity:4.0 堆叠:1 神器:66 神器种类:3
 Chaos Orb:1.0 堆叠:2 神器:46 神器种类:2
+Vaal Orb:1.0 堆叠:5 神器:112 神器种类:1
+Chromatic Orb:0.16 堆叠:10 神器:52 神器种类:1
+Orb of Regret:1.0 堆叠:2 神器:44 神器种类:1
+Vaal Orb:1.0 堆叠:2 神器:41 神器种类:1
+Orb of Fusing:0.3 堆叠:10 神器:54 神器种类:3
+Fundamental Fossil:3.0 堆叠:2 神器:185 神器种类:2
+Orb of Augmentation:0.1 堆叠:10 神器:37 神器种类:2
+Orb of Alteration:0.3 堆叠:5 神器:60 神器种类:1
+Chaos Orb:1.0 堆叠:2 神器:45 神器种类:1
+Chaos Orb:1.0 堆叠:5 神器:70 神器种类:3
+Orb of Alteration:0.3 堆叠:10 神器:56 神器种类:3
+Vaal Orb:1.0 堆叠:5 神器:102 神器种类:2
+Vaal Orb:1.0 堆叠:5 神器:76 神器种类:2
+Jeweller's Orb:0.15 堆叠:10 神器:31 神器种类:1
+Timeless Maraketh Splinter:0.25 堆叠:25 神器:245 神器种类:3
+Splinter of Xoph:0.3 堆叠:12 神器:108 神器种类:3
+Vaal Orb:1.0 堆叠:10 神器:205 神器种类:2
+Jeweller's Orb:0.15 堆叠:10 神器:54 神器种类:1
+Jeweller's Orb:0.15 堆叠:10 神器:52 神器种类:1
+Orb of Alteration:0.3 堆叠:5 神器:40 神器种类:1
+Orb of Fusing:0.3 堆叠:5 神器:28 神器种类:1
+Glassblower's Bauble:1.0 堆叠:2 神器:47 神器种类:2
+Chaos Orb:1.0 堆叠:2 神器:36 神器种类:2
+Vaal Orb:1.0 堆叠:2 神器:24 神器种类:2
+Metallic Fossil:3.0 堆叠:2 神器:52 神器种类:3
+Scorched Fossil:3.0 堆叠:2 神器:124 神器种类:2
+Orb of Scouring:1.0 堆叠:2 神器:45 神器种类:2
+Ambush Scarab:7.0 堆叠:1 神器:110 神器种类:1
+Chaos Orb:1.0 堆叠:2 神器:58 神器种类:1
+Blessed Orb:1.0 堆叠:2 神器:37 神器种类:1
+Orb of Alteration:0.3 堆叠:5 神器:35 神器种类:1
+Orb of Scouring:1.0 堆叠:2 神器:31 神器种类:1
+Orb of Scouring:1.0 堆叠:5 神器:72 神器种类:3
+Dense Fossil:3.0 堆叠:2 神器:64 神器种类:3
+Orb of Alteration:0.3 堆叠:10 神器:56 神器种类:3
+Orb of Fusing:0.3 堆叠:5 神器:31 神器种类:2

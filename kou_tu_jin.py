@@ -4,11 +4,10 @@ import time
 import pandas.io.clipboard as cb
 from ctypes import *
 import re
-from PyQt5.QtWidgets import QMainWindow, QApplication
-from PyQt5.uic import loadUi
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex, QWaitCondition
 from PyQt5.QtCore import QObject, pyqtSignal
 import random
+import zmail
 
 
 class TuJin(QThread):
@@ -255,6 +254,7 @@ class TuJin(QThread):
     def add_item_and_price(self):
         ##添加物品价格后重新运行程序
         #向主线程发送信号，使其出现红框提示添加新的物品及价格
+        ZMailObject('未知物品需要添加价格')
         self.sent_signal()
         #阻塞线程运行
         self.paused = True
@@ -401,6 +401,7 @@ class TuJin(QThread):
             case 3:
                 self.buy_times = 0
                 print('包满了')
+                ZMailObject('包满了')
                 self.current_status = '包满了'
                 return False
             case _:
@@ -480,9 +481,7 @@ class TuJin(QThread):
         return False
     def delete_special_item(self):
         if 'Support Gems' in self.item_Class or 'Skill Gems' in self.item_Class:
-            self.current_status = '当前物品为技能宝石'
-        else:
-            self.current_status = '不是技能宝石'
+            self.current_status = '技能石'
         if 'Rings' in self.item_Class:
             self.current_status = '裂隙戒指'
         if 'Scarab' in self.item_name:
@@ -496,18 +495,7 @@ class TuJin(QThread):
         if 'Cluster' in self.item_name:
             self.current_status = '星团珠宝'
         return False
-    def buy_special_gems(self):
-        if self.item_name == 'Enlighten Support':
-            self.current_status = '购买'
-            return False
-        if self.item_name == 'Empower Support':
-            self.current_status = '购买'
-            return False
-        if self.item_name == 'Enhance Support':
-            self.current_status = '购买'
-            return False
-        self.current_status = '购买完毕'
-        return False
+
 
     def deal_breach_ring(self):
         self.item_level = self.get_item_level()
@@ -564,7 +552,33 @@ class TuJin(QThread):
             return False
         self.current_status = '重置参数'
         return False
+#Quality: +19%
+    def deal_gems(self):
 
+        if self.item_name == 'Enlighten Support':
+            self.current_status = '购买'
+            return False
+        if self.item_name == 'Empower Support':
+            self.current_status = '购买'
+            return False
+        if self.item_name == 'Enhance Support':
+            self.current_status = '购买'
+            return False
+        self.current_status = '购买完毕'
+        return False
+        #不是赋予、启蒙、增幅，则根据品质换算c
+        text = cb.paste()
+        text_quality = [line for line in text.split('\n') if 'Quality:' in line][0]
+        quality = int(re.findall(r'\d+', text_quality)[0])
+        self.item_name = 'Gemcutter\'s Prism'
+        self.find_item_price()
+        self.item_price = (self.item_price / 20) * quality
+        self.current_status = '已取得物品价格'
+        return False
+
+
+
+        return False
     def run(self):
         #主线程执行函数
         action_handlers = {
@@ -586,12 +600,12 @@ class TuJin(QThread):
             '更新价格表':self.reload_date_file,
             '重置参数':self.reset_pamar,
             '排除特殊种类物品':self.delete_special_item,
-            '匹配三个特殊辅助宝石购买':self.buy_special_gems,
             '处理裂隙戒指':self.deal_breach_ring,
             '处理圣甲虫':self.deal_scarab,
             '处理地图':self.deal_map,
             '处理孕育石':self.deal_incubator,
             '处理星团珠宝':self.deal_cluster_jewel,
+            '处理技能石':self.deal_gems,
 
 
 
@@ -648,14 +662,13 @@ class TuJin(QThread):
             '已取得物品名称':'获取物品种类',
             '已获取物品种类': '排除特殊种类物品',
 
-            '当前物品为技能宝石':'匹配三个特殊辅助宝石购买',
-            '不是技能宝石':'查找物品价格',
             '裂隙戒指':'处理裂隙戒指',
             '圣甲虫':'处理圣甲虫',
             '地图': '处理地图',
             '圣油':'重置参数',
             '孕育石':'处理孕育石',
             '星团珠宝':'处理星团珠宝',
+            '技能石':'处理技能石',
 
             '未找到物品价格':'添加物品及价格','已取得物品价格':'获取神器种类及数量',
             '已获取神器种类及数量': '判断是否购买',
@@ -729,3 +742,18 @@ class TuJin(QThread):
         self.wait()  # 等待线程结束
         # self.stopped = True
         # self.resume()  # 如果处于暂停状态，先唤醒
+class ZMailObject(object):
+    def __init__(self, message):
+        print('<ZMailObject>')
+        self.username = '870980194@qq.com'
+        #邮箱授权码
+        self.authorization_code = 'bgortgbiuxcubfgi'
+        #邮箱服务对象
+        self.server= zmail.server(self.username, self.authorization_code)
+        mail_body = {
+            'subject': f'图金扣通货停滞,原因为{message}',
+            'content_text': f'',
+            # 'attachments': ['./attachments/report.png']
+        }
+        mail_to = '870980194@qq.com'
+        self.server.send_mail(mail_to, mail_body)
