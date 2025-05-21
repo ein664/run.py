@@ -15,7 +15,7 @@ import random
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
 #导入保存控件状态类
 from saveQtWidgetsState import StateSaver
-from kou_tu_jin import Kou_tu_jin
+from kou_tu_jin import TuJin
 class pages_window(untitled.Ui_MainWindow, QMainWindow):
     def __init__(self):
         super(pages_window, self).__init__()
@@ -124,8 +124,7 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.pushButton_9.clicked.connect(self.start_countdown)
         self.pushButton_10.clicked.connect(self.start_countdown)
         self.pushButton_3.clicked.connect(self.pushButton_3_action)
-        #pushButton_5添加新物品
-        self.pushButton_5.clicked.connect(self.add_new_items)
+
         # 提取数字并赋值
         self.alteration_x, self.alteration_y = map(int, self.primeText_alteration.split(','))
         self.augmentation_x, self.augmentation_y = map(int, self.primeText_augmentation.split(','))
@@ -152,15 +151,37 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.c = [(1337, 592), (1427, 587), (1525, 591), (1623, 596), (1725, 591), (1831, 593), (1334, 698), (1450, 691), (1532, 687), (1627, 686), (1719, 689), (1831, 684)]
         # 连接自动保存
         self.state_saver.connect_auto_save(self)
+        #创建工作线程
+        self.TuJin = TuJin()
+        #TuJin线程在找不到价格时发送信号，触发红框提示要添加价格
+        self.TuJin.call_D_signal.connect(self.set_red_border)
+        #砍图金按钮 触发tujin线程中的run函数，开始工作
+        self.pushButton_6.clicked.connect(self.start_process)
+        # pushButton_5添加新物品，添加新物品后，解锁阻塞的线程时期继续运行
+        self.pushButton_5.clicked.connect(self.add_new_items)
+        #关闭
+        self.pushButton_7.clicked.connect(self.tujin_stop)
 
-        self.kou_tu_jin = Kou_tu_jin()
-        self.kou_tu_jin.call_D_signal.connect(self.set_red_border)
+    def toggle_pause(self):
+        """ 暂停/继续按钮切换 """
+        if self.TuJin.paused:
+            #触发Tujin线程的resume()继续函数，使线程继续运行
+            self.TuJin.resume()  # 如果已暂停，则继续
+        else:
+            self.TuJin.pause()  # 如果运行中，则暂停
+    def tujin_stop(self):
+        #能用鼠标点击按钮触发该函数，主线程一定是挂起的
+        self.set_black_border()
+        self.TuJin.current_status = '停止工作'#requestInterruption()
+        self.toggle_pause()
+        # self.TuJin.wait()
+    def start_process(self):
+        """ 开始按钮点击事件 """
+        #自动调用重写的run方法
+        time.sleep(3)
+        self.TuJin._is_running = True
+        self.TuJin.start()  # 启动工作线程
 
-        self.pushButton_6.clicked.connect(self.Tedef)
-
-    def Tedef(self):
-
-        self.kou_tu_jin.sent_signal()
 
     def add_new_items(self):
         itemName = self.itemName1.toPlainText()
@@ -171,6 +192,10 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.itemName1.setPlainText('')
         self.itemPrice.setPlainText('')
         self.set_black_border()
+        time.sleep(3)#睡眠3s后触发线程阻塞/继续函数
+        self.TuJin.current_status = '已添加物品及价格'
+        self.toggle_pause()
+
 
 
     def set_red_border(self):
@@ -193,6 +218,7 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
 
     def closeEvent(self, event):
         """窗口关闭时保存所有状态"""
+        self.TuJin.stop()
         self.state_saver.save_all_states(self)
         super().closeEvent(event)
 

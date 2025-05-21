@@ -2687,14 +2687,27 @@
        <widget class="QPushButton" name="pushButton_6">
         <property name="geometry">
          <rect>
-          <x>290</x>
+          <x>300</x>
           <y>130</y>
           <width>75</width>
           <height>23</height>
          </rect>
         </property>
         <property name="text">
-         <string>PushButton</string>
+         <string>砍图金</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton_7">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>130</y>
+          <width>75</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>关闭</string>
         </property>
        </widget>
       </widget>
