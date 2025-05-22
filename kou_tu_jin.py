@@ -52,7 +52,7 @@ class TuJin(QThread):
         self.lesser_artifiact = 0.015#50个换1c是0.02，代币多就调高数值，神器多就减小数值
         self.greater_artifiact = 0.025#应该和次级差不多
         self.exceptional_artifiact = 0.02#0.046
-        self.grand_artifiact = 0.16
+        self.grand_artifiact = 0.128
 
         #每个物品重置
         self.artifact_type = 0
@@ -96,19 +96,6 @@ class TuJin(QThread):
         return True
 
         # 成功购买一次就清零购买失败的频率
-
-
-    def reset_state(self):
-        self.artifact_type = 0
-        self.artifact_number = 0
-        self.item_name = ''
-        self.item_level = 0
-        self.item_number = 0
-        self.copy_results = ''
-        self.lookup = {}  # 数据文件
-        self.item_price = 0
-        self.buy_times = 0  # 记录一个物品购买几次的参数
-        self.item_Class = ''
 
     def get_item_name(self):
         """
@@ -300,8 +287,14 @@ class TuJin(QThread):
         time.sleep(self.duration_time)
         # 获取剪切板
         a = self.get_clipboard()[0]
-        # print(a)
-        self.artifact_number = int(a)
+
+        try:
+            self.artifact_number = int(a)
+        except Exception:
+            print(Exception)
+            print('a:' + str(a))
+            self.stop()
+
 
     def get_artifact_type(self):
         pixel = self.get_pixel(649, 663)
@@ -582,7 +575,8 @@ class TuJin(QThread):
         quality = int(re.findall(r'\d+', text_quality)[0])
         self.item_name = 'Gemcutter\'s Prism'
         self.find_item_price()
-        self.item_price = (self.item_price / 20) * quality
+        self.item_price = round((self.item_price / 20) * quality, 2)
+        #round((self.item_price / 20) * quality, 2)
         # print('gem_quality:'+str(quality))
         # print('gem_pirce:'+str(self.item_price))
         self.current_status = '已取得物品价格'
@@ -623,7 +617,7 @@ class TuJin(QThread):
 
 
         }
-
+        print(self._is_running)
         while self._is_running:
 
             # 暂停检查区块（需要线程安全）
@@ -754,22 +748,9 @@ class TuJin(QThread):
 
     def stop(self):
         """ 停止线程 """
+        self.reset_pamar()
         self._is_running = False
-        self.wait()  # 等待线程结束
+        self.finished.emit()
+        # self.wait()  # 等待线程结束
         # self.stopped = True
         # self.resume()  # 如果处于暂停状态，先唤醒
-class ZMailObject(object):
-    def __init__(self, message):
-        print('<ZMailObject>')
-        self.username = '870980194@qq.com'
-        #邮箱授权码
-        self.authorization_code = 'bgortgbiuxcubfgi'
-        #邮箱服务对象
-        self.server= zmail.server(self.username, self.authorization_code)
-        mail_body = {
-            'subject': f'图金扣通货停滞,原因为{message}',
-            'content_text': f'',
-            # 'attachments': ['./attachments/report.png']
-        }
-        mail_to = '870980194@qq.com'
-        self.server.send_mail(mail_to, mail_body)

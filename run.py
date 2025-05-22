@@ -6,7 +6,7 @@ import untitled
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton,
                              QVBoxLayout, QWidget, QMessageBox, QCheckBox)
 from SAVE_INFO import JsonDataSaver
-from PyQt5.QtCore import (QTimer, QSettings, Qt, QObject,pyqtSignal)
+from PyQt5.QtCore import (QTimer,QThread, QSettings, Qt, QObject,pyqtSignal)
 from Mouse_move import mouse_move
 import pydirectinput
 import pyautogui
@@ -162,6 +162,15 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         #关闭
         self.pushButton_7.clicked.connect(self.tujin_stop)
 
+        self.thread = QThread()
+        self.worker = self.TuJin
+        self.worker.moveToThread(self.thread)
+
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+
     def toggle_pause(self):
         """ 暂停/继续按钮切换 """
         if self.TuJin.paused:
@@ -173,13 +182,18 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         #能用鼠标点击按钮触发该函数，主线程一定是挂起的
         self.set_black_border()
         self.TuJin.current_status = '停止工作'#requestInterruption()
-        self.toggle_pause()
+        if self.TuJin.paused :
+            self.toggle_pause()
+
+
         # self.TuJin.wait()
     def start_process(self):
         """ 开始按钮点击事件 """
         #自动调用重写的run方法
         time.sleep(3)
         self.TuJin._is_running = True
+        print('self.TuJin._is_running'+str(self.TuJin._is_running))
+        print('self.TuJin.start()')
         self.TuJin.start()  # 启动工作线程
 
 
