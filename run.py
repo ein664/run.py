@@ -22,6 +22,23 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.setupUi(self)
         # 获取时间控制对象
         self.timer = QTimer(self)
+        #删除野兽用计时器qtimer
+        self.countdown_timer = QTimer()
+        self.countdown_timer.timeout.connect(self.update_countdown_text)
+
+
+        #抓荒野兽用计时器
+        self.catch_beast_timer = QTimer()
+        self.catch_beast_timer.timeout.connect(self.catch_yellow_beast2)
+
+
+        #统计物品词缀数量
+        self.Prefix_Modifier = 0
+        self.Suffix_Modifier = 0
+        #在使用改造前重置为0
+
+        ####重要的信号变量
+        self.Message = "开始"
 
         # 计时器开始后每1s触发一次timeout
         self.timer.timeout.connect(self.update_counter)
@@ -33,7 +50,7 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.state_saver = StateSaver(self)
         #循环退出是否由杀死鼠标激活
         self.kill_window = False
-        # 设置信号与槽
+        # 设置信号与槽mod_x_9
         for i in range(1, 10):
             # print(i)
             mod = getattr(self, f"mod{i}_1")
@@ -60,7 +77,23 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
             mod.textChanged.connect(self.modSave)
             mod.setPlainText(self.loadText(f"mod{i}_3_1"))
 
-            if i <= 4:
+            mod = getattr(self, f"mod{i}_5")
+            mod.textChanged.connect(self.modSave)
+            mod.setPlainText(self.loadText(f"mod{i}_5"))
+
+            mod = getattr(self, f"mod{i}_5_1")
+            mod.textChanged.connect(self.modSave)
+            mod.setPlainText(self.loadText(f"mod{i}_5_1"))
+
+            mod = getattr(self, f"mod{i}_6")
+            mod.textChanged.connect(self.modSave)
+            mod.setPlainText(self.loadText(f"mod{i}_6"))
+
+            mod = getattr(self, f"mod{i}_6_1")
+            mod.textChanged.connect(self.modSave)
+            mod.setPlainText(self.loadText(f"mod{i}_6_1"))
+
+            if i <= 6:
                 mod = getattr(self, f"item_name_{i}")
                 mod.textChanged.connect(self.modSave)
                 mod.setPlainText(self.loadText(f"item_name_{i}"))
@@ -69,7 +102,7 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
                 mod.textChanged.connect(self.modSave)
                 mod.setPlainText(self.loadText(f"item_name_{i}_1"))
 
-        #洗药剂
+        #洗药剂 mod_x_12
         for i in range(1, 18):
             mod = getattr(self, f"mod{i}_4")
             mod.textChanged.connect(self.modSave)
@@ -82,6 +115,28 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.alteration.textChanged.connect(self.alterationSave)
         self.augmentation.textChanged.connect(self.augmentationSave)
         self.item_posi.textChanged.connect(self.item_posi_Save)
+        self.regal.textChanged.connect(self.scouring_transmutation_regal_Save)
+        self.scouring.textChanged.connect(self.scouring_transmutation_regal_Save)
+        self.transmutation.textChanged.connect(self.scouring_transmutation_regal_Save)
+
+
+        #神器数量的信号与槽
+        self.ci_ji = getattr(self, "ci_ji")
+        # print('self.ci_ji:')
+        # print(self.ci_ji)
+        self.gao_ji = getattr(self, "gao_ji")
+        self.zhuo_yue = getattr(self, "zhuo_yue")
+        self.zhi_gao = getattr(self, "zhi_gao")
+
+        self.zhi_gao.textChanged.connect(self.modSave )
+        self.zhuo_yue.textChanged.connect(self.modSave)
+        self.gao_ji.textChanged.connect(self.modSave)
+        self.ci_ji.textChanged.connect(self.modSave)
+
+        self.ci_ji.setPlainText(self.loadText("ci_ji"))
+        self.gao_ji.setPlainText(self.loadText("gao_ji"))
+        self.zhuo_yue.setPlainText(self.loadText("zhuo_yue"))
+        self.zhi_gao.setPlainText(self.loadText("zhi_gao"))
 
 
         # 获取特定文本框历史内容
@@ -98,8 +153,12 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         # self.primeText_mod9 = self.loadText('mod9')
         #改造位置
         self.primeText_alteration = self.loadText('alteration')
+        self.primeText_regal = self.loadText('regal')
+        self.primeText_scouring = self.loadText('scouring')
+        self.primeText_transmutation = self.loadText('transmutation')
         # 增幅位置
         self.primeText_augmentation = self.loadText('augmentation')
+
         # 装备位置
         self.primeText_item_posi = self.loadText('item_posi')
         # self.primeText_item_name = self.loadText('item_name')
@@ -112,6 +171,9 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.alteration.setPlainText(self.primeText_alteration)
         self.augmentation.setPlainText(self.primeText_augmentation)
         self.item_posi.setPlainText(self.primeText_item_posi)
+        self.transmutation.setPlainText(self.primeText_transmutation)
+        self.regal.setPlainText(self.primeText_regal)
+        self.scouring.setPlainText(self.primeText_scouring)
 
         self.item_name_text = ''
 
@@ -123,12 +185,21 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.pushButton_8.clicked.connect(self.start_countdown)
         self.pushButton_9.clicked.connect(self.start_countdown)
         self.pushButton_10.clicked.connect(self.start_countdown)
+        self.pushButton_12.clicked.connect(self.start_countdown)
+        self.pushButton_13.clicked.connect(self.start_countdown)
+        #用于删除野兽
+        self.pushButton_14.clicked.connect(self.delet_bestiary)
+        self.pushButton_15.clicked.connect(self.catch_yellow_beast)
         self.pushButton_3.clicked.connect(self.pushButton_3_action)
 
+
         # 提取数字并赋值
-        self.alteration_x, self.alteration_y = map(int, self.primeText_alteration.split(','))
+        self.alteration_x, self.alteration_y = map(int, self.primeText_alteration  .split(','))
         self.augmentation_x, self.augmentation_y = map(int, self.primeText_augmentation.split(','))
         self.item_x, self.item_y = map(int, self.primeText_item_posi.split(','))
+        self.regal_x, self.regal_y = map(int, self.primeText_regal.split(','))
+        self.scouring_x, self.scouring_y = map(int, self.primeText_scouring.split(','))
+        self.transmutation_x, self.transmutation_y = map(int, self.primeText_transmutation.split(','))
 
         #洗多件装备时，控制位置的变量
         self.items_position = 0
@@ -162,6 +233,9 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         #关闭
         self.pushButton_7.clicked.connect(self.tujin_stop)
 
+        self.pos0 = 0#删除野兽用到的储存原始鼠标位置的参数
+
+
         self.thread = QThread()
         self.worker = self.TuJin
         self.worker.moveToThread(self.thread)
@@ -170,7 +244,87 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
+    def _xi_zhuangbei(self):
+        """装备处理方法（字典映射版）"""
+        action_handlers = {
+            '改造': self._handle_gaizao,
+            '增幅': self._handle_zengfu,
+            '是否需要富豪': self.is_if_use_fuhao,
+            '洗装备完成':self._handle_found_target,
+            # '空装备名': self._handle_empty_name,
+            '停止工作': self._handle_stop_work,
+            '鼠标移至物品上':self.mouse_move_to_item_position,
+            '获取物品信息':self.get_item_info,
+            '判断是否含有目标词缀':self.check_item,
+            '是否需要增幅':self.is_if_use_zengfu,
+            '富豪':self._handle_fuhao,#该函数先增幅再富豪
+            '获取物品信息+检查目标词缀是否为2': self.check_aim_modifity_number,
+            '检查是否要洗多件装备': self._handle_found_target,
+            '重铸_蜕变': self.scouring_and_transmutation
+            # '': '',
+            # '': '',
+            # '': '',
+            # '': '',
+            # '': '',
+            # '': '',
+            # '': '',
 
+        }
+        #这小代码整的，只能说ds牛逼坏了
+        while True:
+            m = self._determine_action()  # 提取判断逻辑到单独方法
+
+            print('Message:'+self.Message)
+            print('m:'+m)
+            handler = action_handlers.get(m)
+            if not handler:
+                print(f"未知操作: {m}")
+                break
+            if handler():  # 返回 False 时继续循环，返回True,退出循环
+                break
+
+    def _determine_action(self):
+        """判断当前应该执行什么操作"""
+        if self.kill_while_with_mouse():
+            return '停止工作'
+
+
+
+        # self.Message = ""
+        action_handlers = {
+            '已使用改造': '获取物品信息',
+            '已使用增幅': '获取物品信息',
+            '开始':'鼠标移至物品上',
+            '鼠标位于物品上':'获取物品信息',
+            '获取物品信息成功':'判断是否含有目标词缀',
+            '获取物品信息失败':'停止工作',
+            '词缀池获取失败': '停止工作',
+            '没有目标词缀': '是否需要增幅',
+            '含有目标词缀': '是否需要富豪',
+            '不需要增幅': '改造',
+            '需要增幅': '增幅',
+            'is_if_use_zengfu报错': '停止工作',
+            '需要富豪': '富豪',
+            '已使用富豪':'获取物品信息+检查目标词缀是否为2',
+            '不需要富豪': '检查是否要洗多件装备',
+            # '洗多件装备': '',#????
+            # '只洗一件': '',#???
+            '目标词缀数量够': '停止工作',
+            '目标词缀数量不够': '重铸_蜕变',#？？？？
+            '已蜕变': '获取物品信息',
+            '停止工作': '停止工作',
+            # '': '',
+            # '': '',
+            # '': '',
+            # '': '',
+            # '': '',
+            # '': '',
+            # '': '',
+            # '': '',
+
+        }
+        handlers = action_handlers[self.Message]
+        return handlers
     def toggle_pause(self):
         """ 暂停/继续按钮切换 """
         if self.TuJin.paused:
@@ -180,6 +334,8 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
             self.TuJin.pause()  # 如果运行中，则暂停
     def tujin_stop(self):
         #能用鼠标点击按钮触发该函数，主线程一定是挂起的
+
+        self.TuJin.tujin_times = 0
         self.set_black_border()
         self.TuJin.current_status = '停止工作'#requestInterruption()
         if self.TuJin.paused :
@@ -187,17 +343,62 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
 
 
         # self.TuJin.wait()
+    def update_countdown_text(self):
+        #被self.countdown_timer计时器触发
+        if self.counter >= 0:
+            self.pushButton_14.setText(f'启动({self.counter})')
+            self.counter -= 1
+        else:
+            self.countdown_timer.stop()
+            self.pushButton_14.setText('启动')
+            self.counter = 3
+            self.pos0 = pyautogui.position()
+            while True:
+
+                pos1 = pyautogui.position()
+                if pos1 == self.pos0:
+                    pass
+                else:
+                    break
+                pyautogui.click()
+                time.sleep(0.2)
+                pyautogui.hotkey("enter")
+                time.sleep(0.2)
+
+            self.pushButton_14.setEnabled(True)
+
+    def delet_bestiary(self):
+        #被update_countdown_text函数引用
+        self.pushButton_14.setEnabled(False)#禁用按钮
+        self.countdown_timer.start(1000)  # 每秒触发一次
+
+
+
     def start_process(self):
         """ 开始按钮点击事件 """
         #自动调用重写的run方法
+        #防止线程重复运行
+        if self.TuJin and self.TuJin.isRunning():
+            print('勿重复点击，现成运行中')
+            return
+        self.load_artifiact()
+
+        #神器比例传参
+
         time.sleep(3)
         self.TuJin._is_running = True
         print('self.TuJin._is_running'+str(self.TuJin._is_running))
         print('self.TuJin.start()')
         self.TuJin.start()  # 启动工作线程
-
+    def load_artifiact(self):
+        #加载神器
+        self.TuJin.lesser_artifiact = float(self.loadText('ci_ji'))
+        self.TuJin.greater_artifiact = float(self.loadText('gao_ji'))
+        self.TuJin.exceptional_artifiact = float(self.loadText('zhi_gao'))
+        self.TuJin.grand_artifiact = float(self.loadText('zhuo_yue'))
 
     def add_new_items(self):
+        #扣图金价格表增加新物品
         itemName = self.itemName1.toPlainText()
         itemPrice = self.itemPrice.toPlainText()
 
@@ -246,6 +447,7 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         self.timer.start(1000)  # 1000毫秒=1秒
 
     def update_counter(self):
+        #获取当前页装备名称并将要洗的词缀编入数组
         # 当counter<0 时，计时器停止工作
 
         self.widget.setText('鼠标移动' + '(' + str(self.counter) + ')')
@@ -260,18 +462,18 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
             match self.widget_name:
                 case 'pushButton_4':
                     #获取该页装备名称
-                    self.item_name_text = self.item_name_1.toPlainText()
+                    # self.item_name_text = self.item_name_1.toPlainText()
                     self.mods_info = []
 
                     # 将词缀编入数组
                     for i in range(1, 10):
-                        self.get_mods_info(f"mod{i}")
+                        self.get_mods_info(f"mod{i}_1")
                     self.label_69.setText(str(self.mods_info))
                     self.execute_mouse_action()
 
 
                 case 'pushButton_8':
-                    self.item_name_text = self.item_name_2.toPlainText()
+                    # self.item_name_text = self.item_name_2.toPlainText()
                     # 将词缀编入数组
                     self.mods_info = []
                     for i in range(1, 10):
@@ -280,7 +482,7 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
                     self.execute_mouse_action()
 
                 case 'pushButton_9':
-                    self.item_name_text = self.item_name_3.toPlainText()
+                    # self.item_name_text = self.item_name_3.toPlainText()
                     # 将词缀编入数组
                     self.mods_info = []
                     for i in range(1, 10):
@@ -297,6 +499,24 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
                     self.label_74.setText(str(self.mods_info))
                     #调用洗药剂
                     self.yaoji_execute_mouse_action()
+
+                case 'pushButton_12':
+                    # self.item_name_text = self.item_name_5.toPlainText()
+                    # 将词缀编入数组
+                    self.mods_info = []
+                    for i in range(1, 10):
+                        self.get_mods_info(f"mod{i}_5")
+                    self.label_82.setText(str(self.mods_info))
+                    self.execute_mouse_action()
+
+                case 'pushButton_13':
+                    # self.item_name_text = self.item_name_6.toPlainText()
+                    # 将词缀编入数组
+                    self.mods_info = []
+                    for i in range(1, 10):
+                        self.get_mods_info(f"mod{i}_6")
+                    self.label_95.setText(str(self.mods_info))
+                    self.execute_mouse_action()
                 case _:
                     print('baocuo')
 
@@ -351,6 +571,9 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
             不是，直接左键点击装备
         :return:
         """
+        self.Prefix_Modifier = 0
+        self.Suffix_Modifier = 0
+
         if self.kill_while_with_mouse():
             self.progessOver()
         else:
@@ -419,241 +642,303 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         if text != '':
             self.mods_info.append(text)
 
-    def xi_zhuangbei(self,callback):
-        """
-        鼠标移至装备
-        获取装备信息
-        匹配
-        :return:
-        """
-        while True:
-            #保险
-            if self.kill_while_with_mouse():
-                self.progessOver()
-                break
-            #获取装备信息
-            self.get_item_info()
-            #检测装备词缀是否为目标词缀
-            if self.check_item():
-                print('目标词缀已得到')
-                pyautogui.keyUp('shift')
-                self.IsFirstGaiZao = False
-                break
-            # 在装备没有目标词缀时
-            #否则检查装备名是否已填
-            elif self.item_name_text == '':
-                #装备名未填
-                print('空装备名')
-                continue
-            #在装备没有目标词缀时
-            #装备名已填，继续确认需不需要增幅
-            else:
-                self.item_info = self.item_info.split('\r\n')
-                #检查是否要空前增幅
-                if self.checkBox_1.isChecked():
-                    # 已确认需要空前增幅
-                    # 检查是否空前物品信息列表一行一行开抽
-
-                    for line in self.item_info:
-                        if self.item_name_text in line:
-                        # 检查物品名是否在该行
-                            line = line.strip()  # 移除首尾空白字符
-                            index = line.find(self.item_name_text)
-                            # 检查前面是否有非空白字符
-                            front_empty = (index == 0)
-
-                            # 检查后面是否有非空白字符
-                            back_empty = (index + len(self.item_name_text) == len(line))
-                            if front_empty:  # 确认空前
-                                self.use_zengfu()  # 上增幅
-                            elif back_empty:  # 不空前就检查是否空后
-                                #确认空后
-                                if self.checkBox_2.isChecked():  # 确认是否要空后增幅
-                                    #确认空后且需要空后增幅
-                                    self.use_zengfu()
-                                    continue
-                                else:#确认空后但不需要空后增幅
-                                    self.use_gaizao()
-                                    continue
-                            else:#既不空前也不空后
-                                self.use_gaizao()
-                                continue
-                    #for循环跑完都没发现物品名称
-                    # print("检查物品名是否正确，装备信息中找不到物品名称")
-                    # break
-                # 不需要空前增幅
-                # 检查是否要空后增幅
-                elif self.checkBox_2.isChecked():
-                    # 已确认要空后增幅
-                    # 开始抽物品信息
-                    for line in self.item_info:
-                        # 物品名在该行
-                        if self.item_name_text in line:
-                            line = line.strip()  # 移除首尾空白字符
-                            index = line.find(self.item_name_text)
-                            # 检查后面是否有非空白字符
-                            back_empty = (index + len(self.item_name_text) == len(line))
-                            if back_empty:
-                                # 确认空后
-                                self.use_zengfu()
-                                #结束本轮循环，防止触发后面洗多件装备；开启新一轮循环匹配词缀
-                                continue
-                            else:  # 需要空后增幅，但装备不空后
-                                self.use_gaizao()
-                                #结束本轮循环，防止触发后面洗多件装备；开启新一轮循环匹配词缀
-                                continue
-
-
-                    # print("2检查物品名是否正确，装备信息中找不到物品名称")
-                    # break
-                else:#不需要增幅直接改造
-                    self.use_gaizao()
-
-        #检查是否要洗多件装备，是的话更换装备，再次调用他自己
-        if self.kill_window:
-            #由鼠标位置触发，检查循环退出是否由杀死窗口提出
-            self.kill_window = False
+    # def xi_zhuangbei(self,callback):
+    #     """
+    #     鼠标移至装备
+    #     获取装备信息
+    #     匹配
+    #     :return:
+    #     """
+    #     while True:
+    #         #保险
+    #         if self.kill_while_with_mouse():
+    #             self.progessOver()
+    #             break
+    #         #获取装备信息
+    #         self.get_item_info()
+    #         #检测装备词缀是否为目标词缀
+    #         if self.check_item():
+    #             print('目标词缀已得到')
+    #             pyautogui.keyUp('shift')
+    #             self.IsFirstGaiZao = False
+    #             break
+    #         # 在装备没有目标词缀时
+    #         #否则检查装备名是否已填
+    #         elif self.item_name_text == '':
+    #             #装备名未填
+    #             print('空装备名')
+    #             continue
+    #         #在装备没有目标词缀时
+    #         #装备名已填，继续确认需不需要增幅
+    #         else:
+    #             self.item_info = self.item_info.split('\r\n')
+    #             #检查是否要空前增幅
+    #             if self.checkBox_1.isChecked():
+    #                 # 已确认需要空前增幅
+    #                 # 检查是否空前物品信息列表一行一行开抽
+    #
+    #                 for line in self.item_info:
+    #                     if self.item_name_text in line:
+    #                     # 检查物品名是否在该行
+    #                         line = line.strip()  # 移除首尾空白字符
+    #                         index = line.find(self.item_name_text)
+    #                         # 检查前面是否有非空白字符
+    #                         front_empty = (index == 0)
+    #
+    #                         # 检查后面是否有非空白字符
+    #                         #国际服更改
+    #                         back_empty = (index + len(self.item_name_text) == len(line))
+    #                         if front_empty:  #
+    #                         # print(line)
+    #                         # if '的' not in line: #确认空前
+    #                             self.use_zengfu()  # 上增幅
+    #                         # elif '之' not in line:
+    #                         elif back_empty:  # 不空前就检查是否空后
+    #                             #确认空后
+    #                             if self.checkBox_2.isChecked():  # 确认是否要空后增幅
+    #                                 #确认空后且需要空后增幅
+    #                                 self.use_zengfu()
+    #                                 continue
+    #                             else:#确认空后但不需要空后增幅
+    #                                 self.use_gaizao()
+    #                                 continue
+    #                         else:#既不空前也不空后
+    #                             self.use_gaizao()
+    #                             continue
+    #                 #for循环跑完都没发现物品名称
+    #                 # print("检查物品名是否正确，装备信息中找不到物品名称")
+    #                 # break
+    #             # 不需要空前增幅
+    #             # 检查是否要空后增幅
+    #             elif self.checkBox_2.isChecked():
+    #                 # 已确认要空后增幅
+    #                 # 开始抽物品信息
+    #                 for line in self.item_info:
+    #                     # 物品名在该行
+    #                     if self.item_name_text in line:
+    #                         line = line.strip()  # 移除首尾空白字符
+    #                         index = line.find(self.item_name_text)
+    #                         # 检查后面是否有非空白字符
+    #                         back_empty = (index + len(self.item_name_text) == len(line))
+    #                         if back_empty:
+    #                         # if '之' not in line:
+    #                             # 确认空后
+    #                             self.use_zengfu()
+    #                             #结束本轮循环，防止触发后面洗多件装备；开启新一轮循环匹配词缀
+    #                             continue
+    #                         else:  # 需要空后增幅，但装备不空后
+    #                             self.use_gaizao()
+    #                             #结束本轮循环，防止触发后面洗多件装备；开启新一轮循环匹配词缀
+    #                             continue
+    #
+    #
+    #                 # print("2检查物品名是否正确，装备信息中找不到物品名称")
+    #                 # break
+    #             else:#不需要增幅直接改造
+    #                 self.use_gaizao()
+    #
+    #     #检查是否要洗多件装备，是的话更换装备，再次调用他自己
+    #     if self.kill_window:
+    #         #由鼠标位置触发，检查循环退出是否由杀死窗口提出
+    #         self.kill_window = False
+    #     else:
+    #         if self.checkBox_3.isChecked():
+    #             self.oneXsix(self.a, callback)
+    #         elif self.checkBox_4.isChecked():
+    #             self.twoXtwelve(self.b,callback)
+    #         elif self.checkBox_5.isChecked():
+    #             self.twoXtwelve(self.c,callback)
+    #
+    #
+    #     #重置状态
+    #     self.items_position = 0
+    #     self.IsFirstGaiZao = False
+    def is_if_use_fuhao(self):
+        if self.checkBox_6.isChecked():
+            self.Message = '需要富豪'
         else:
-            if self.checkBox_3.isChecked():
-                self.oneXsix(self.a, callback)
-            elif self.checkBox_4.isChecked():
-                self.twoXtwelve(self.b,callback)
-            elif self.checkBox_5.isChecked():
-                self.twoXtwelve(self.c,callback)
-
-
-        #重置状态
-        self.items_position = 0
-        self.IsFirstGaiZao = False
-############################################################################################
-    def old_xi_zhuangbei(self):
-        """
-        鼠标移至装备
-        获取装备信息
-        匹配
-        :return:
-        """
-
-        # 保险
-        if self.kill_while_with_mouse():
-            m = '停止工作'
-        else:
-            pydirectinput.moveTo(self.item_x, self.item_y)
-            # 获取装备信息
-            self.get_item_info()
-
-            # 检测装备词缀是否为目标词缀
-            if self.check_item():
-                # 发现目标词缀
-                m = '发现目标词缀'
-            # 在装备没有目标词缀时，检查装备名是否已填
-            elif self.item_name_text == '':
-                # 装备名未填
-                m = '空装备名'
-            # 在装备没有目标词缀时，装备名已填，继续确认需不需要增幅
-            else:
-
-                self.item_info = self.item_info.split('\r\n')
-                # 检查是否要空前增幅
-                if self.checkBox_1.isChecked():
-                    # 需要空前增幅,检查是否空前
-                    m = self.is_if_have_empty_modifier()
-                    if m == '空前':
-                        m = '增幅'
-                    else:
-                        m = '改造'
-                # 不需要空前增幅.检查是否要空后增幅
-                elif self.checkBox_2.isChecked():
-                    # 需要空后增幅，检查是否空后
-                    m = self.is_if_have_empty_modifier()
-                    if m == '空后':
-                        m = '增幅'
-                    else:
-                        m = '改造'
-                else:  # 不需要增幅直接改造
-                    m = '改造'
-        match m:
-            case '改造':
-                self.use_gaizao()#_xi_zhuangbei
-                time.sleep(0.01)
-                self._xi_zhuangbei()
-            case '增幅':
-                self.use_zengfu()
-                time.sleep(self.laytime)
-                self._xi_zhuangbei()
-            case '发现目标词缀':
-                print('目标词缀已得到')
-                pyautogui.keyUp('shift')
-                self.IsFirstGaiZao = False
-                self.xi_duo_jian_zhuangbei(self._xi_zhuangbei)
-            case '空装备名':
-                print('空装备名')
-            case '停止工作':
-                self.progessOver()
-        #重置状态
-        self.items_position = 0
-        self.IsFirstGaiZao = False
-
-    def _xi_zhuangbei(self):
-        """装备处理方法（字典映射版）"""
-        action_handlers = {
-            '改造': self._handle_gaizao,
-            '增幅': self._handle_zengfu,
-            '发现目标词缀': self._handle_found_target,
-            '空装备名': self._handle_empty_name,
-            '停止工作': self._handle_stop_work,
-        }
-        #这小代码整的，只能说ds牛逼坏了
-        while True:
-            m = self._determine_action()  # 提取判断逻辑到单独方法
-            handler = action_handlers.get(m)
-            if not handler:
-                print(f"未知操作: {m}")
-                break
-            if handler():  # 返回 False 时继续循环，返回True,退出循环
-                break
-
-    def _determine_action(self):
-        """判断当前应该执行什么操作"""
-        if self.kill_while_with_mouse():
-            return '停止工作'
-
+            self.Message = '不需要富豪'
+        return False
+    def mouse_move_to_item_position(self):
         pydirectinput.moveTo(self.item_x, self.item_y)
-        self.get_item_info()
-
-        if self.check_item():
-            return '发现目标词缀'
-        if self.item_name_text == '':
-            return '空装备名'
-
-        self.item_info = self.item_info.split('\r\n')
+        pos = pyautogui.position()  # 该函数获取鼠标位置
+        if (pos.x, pos.y) == (self.item_x, self.item_y):
+            pass
+        else:
+            self.Message = '停止工作'
+            return False
+        self.Message = '鼠标位于物品上'
+        return False
+    def is_if_use_zengfu(self):
         if self.checkBox_1.isChecked():
             m = self.is_if_have_empty_modifier()
-            return '增幅' if m == '空前' else '改造'
-        elif self.checkBox_2.isChecked():
+            # print(self.item_info)
+            # print('1m='+str(m))
+            if m == '空前':
+                self.Message = '需要增幅'
+                return False
+            elif m == '空后' or '改造':
+                if self.checkBox_2.isChecked():
+                    self.Message = '需要增幅'
+                    return False
+                else :#m == '改造'
+                    self.Message = '不需要增幅'
+                    return False
+            else:
+                self.Message = 'is_if_use_zengfu报错'
+                return False
+        elif self.checkBox_2.isChecked():#空后增幅
             m = self.is_if_have_empty_modifier()
-            return '增幅' if m == '空后' else '改造'
+            # print(self.item_info)
+            # print('2m=' + str(m))
+            if m == '空后':
+                self.Message = '需要增幅'
+                return False
+            else:#不空后
+                self.Message = '不需要增幅'
+                return False
+
         else:
-            return '改造'
+            self.Message = '不需要增幅'
+            return False
+        self.Message = 'is_if_use_zengfu报错'
+        return False
+
+    def check_aim_modifity_number(self):
+        # 检查装备上有几个词缀池中的词缀
+
+        # 获取物品信息
+        self.get_item_info()
+
+        number = 0
+        for mod in self.mods_info:
+            if mod in self.item_info:
+                number += 1
+        if number >= 2:
+
+            self.Message = '目标词缀数量够'
+            return False
+        else:
+            self.Message = '目标词缀数量不够'
+            return False
+
+    def _handle_fuhao(self):
+        #先增幅再使用富豪石
+        if self.kill_while_with_mouse():
+            self.progessOver()
+        else:
+            #增幅
+            self._handle_zengfu()
+
+            self.IsFirstGaiZao = False
+            # 松开shift
+            pyautogui.keyUp('shift')
+            time.sleep(self.laytime)
+            # 移动到增幅石
+            pydirectinput.moveTo(self.regal_x, self.regal_y)
+            time.sleep(self.laytime)
+            pos = pyautogui.position()
+            if (pos.x, pos.y) == (self.regal_x, self.regal_y):
+                pass
+            else:
+                self.Message = '停止工作'
+                return False
+            # 右键点击
+            pydirectinput.click(button="right")
+            time.sleep(self.laytime)
+            # 移动到装备
+            pydirectinput.moveTo(self.item_x, self.item_y)
+            time.sleep(self.laytime)
+            pos = pyautogui.position()
+            if (pos.x, pos.y) == (self.item_x, self.item_y):
+                pass
+            else:
+                self.Message = '停止工作'
+                return False
+            # 左键点击
+            pydirectinput.click(button="left")
+            time.sleep(self.laytime)
+        self.Message = '已使用富豪'
+        return False
+
+    def scouring_and_transmutation(self):
+        #重铸蜕变
+
+        #重铸
+        pydirectinput.moveTo(self.scouring_x, self.scouring_y)
+        time.sleep(self.laytime)
+        pos = pyautogui.position()  # 该函数获取鼠标位置
+        if (pos.x, pos.y) == (self.scouring_x, self.scouring_y):
+            pass
+        else:
+            self.Message = '停止工作'
+            return False
+        # 右键点击
+        pydirectinput.click(button="right")
+        time.sleep(self.laytime)
+        # 移动到装备
+        pydirectinput.moveTo(self.item_x, self.item_y)
+        time.sleep(self.laytime)
+        pos = pyautogui.position()  # 该函数获取鼠标位置
+        if (pos.x, pos.y) == (self.item_x, self.item_y):
+            pass
+        else:
+            self.Message = '停止工作'
+            return False
+        # 左键点击
+        pydirectinput.click(button="left")
+        time.sleep(self.laytime)
+        #蜕变
+        pydirectinput.moveTo(self.transmutation_x, self.transmutation_y)
+        time.sleep(self.laytime)
+        pos = pyautogui.position()  # 该函数获取鼠标位置
+        if (pos.x, pos.y) == (self.transmutation_x, self.transmutation_y):
+            pass
+        else:
+            self.Message = '停止工作'
+            return False
+        # 右键点击
+        pydirectinput.click(button="right")
+        time.sleep(self.laytime)
+        # 移动到装备
+        pydirectinput.moveTo(self.item_x, self.item_y)
+        time.sleep(self.laytime)
+        pos = pyautogui.position()  # 该函数获取鼠标位置
+        if (pos.x, pos.y) == (self.item_x, self.item_y):
+            pass
+        else:
+            self.Message = '停止工作'
+            return False
+        # 左键点击
+        pydirectinput.click(button="left")
+        time.sleep(self.laytime)
+        self.Message = '已蜕变'
+        return False
+
+
+
 
     def _handle_gaizao(self):
         """处理改造操作"""
         self.use_gaizao()
-        time.sleep(0.01)
+        self.Message = '已使用改造'
         return False  # 继续循环
 
     def _handle_zengfu(self):
         """处理增幅操作"""
         self.use_zengfu()
         time.sleep(self.laytime)
+        self.Message = '已使用增幅'
         return False  # 继续循环
 
     def _handle_found_target(self):
-        """发现目标词缀"""
-        print('目标词缀已得到')
+        """检查是否要洗多件装备"""
+        # print('目标词缀已得到')
         pyautogui.keyUp('shift')
         self.IsFirstGaiZao = False
+
         self.xi_duo_jian_zhuangbei(self._xi_zhuangbei)
+        self.Message = '开始'
         return True  # 退出循环
 
     def _handle_empty_name(self):
@@ -663,7 +948,7 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
 
     def _handle_stop_work(self):
         """停止工作"""
-        self.progessOver()
+        self.progessOver()#_handle_stop_work(self):
         return True  # 退出循环
 ############################################################################################
 
@@ -703,7 +988,7 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
                 time.sleep(self.laytime)
                 yaoji_modifiers = self.check_yaoji()
                 if yaoji_modifiers ==2:
-                    print('目标词缀已得到')
+                    # print('目标词缀已得到')
                     pyautogui.keyUp('shift')
                     pyautogui.keyUp('ctrl')
                     self.IsFirstGaiZao = False
@@ -712,14 +997,14 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
                     self.use_gaizao()
                     self.xi_yaoji()
             case '发现目标词缀':
-                print('目标词缀已得到')
+                # print('目标词缀已得到')
                 pyautogui.keyUp('shift')
                 pyautogui.keyUp('ctrl')
                 self.IsFirstGaiZao = False
                 #触发洗多件装备鼠标移动后触发洗药剂函数检测
                 self.xi_duo_jian_zhuangbei(self.xi_yaoji)
-            case '空装备名':
-                print('空装备名')
+            # case '空装备名':
+            #     print('空装备名')
             case '停止工作':
                 pyautogui.keyUp('shift')
                 pyautogui.keyUp('ctrl')
@@ -733,31 +1018,137 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
     def xi_duo_jian_zhuangbei(self, callback):
         # 检查是否要洗多件装备，是的话更换装备，再次调用他自己
         if self.checkBox_3.isChecked():
+            self.Message = '开始'
             self.oneXsix(self.a, callback)
-
+            self.Message = '停止工作'
+            return False
         elif self.checkBox_4.isChecked():
+            self.Message = '开始'
             self.twoXtwelve(self.b, callback)
+            self.Message = '停止工作'
+            return False
         elif self.checkBox_5.isChecked():
+            self.Message = '开始'
             self.twoXtwelve(self.c, callback)
+            self.Message = '停止工作'
+            return False
+        else:
+            self.items_position = 0
+            pyautogui.keyUp('shift')
+            pyautogui.keyUp('ctrl')
+            self.IsFirstGaiZao = False
+            self.Message = '停止工作'
+            return False
+
+
+    def catch_yellow_beast2(self):
+        if self.counter >= 0:
+            self.pushButton_15.setText(f'启动({self.counter})')
+            self.counter -= 1
+        else:
+            self.catch_beast_timer.stop()
+            self.pushButton_15.setText('启动')
+            self.counter = 3
+
+            poi =[(1330, 586), (1340, 633), (1335, 689), (1337, 736),(1385, 602),
+                  (1386, 645),(1385, 696),(1382, 738), (1428, 591), (1430, 641), (1431, 696),
+                  (1432, 740), (1482, 596), (1475, 647), (1479, 694), (1481, 743) ]
+
+            i = 0
+            b = 0.5
+
+            for counter in range(16):
+                if counter >len(poi):
+                    break
+                x, y = poi[counter]
+
+                if counter == 4:
+                    # 空格点地移动人物
+                    pydirectinput.moveTo(1292, 251)
+                    pydirectinput.press('space')
+                    time.sleep(1)
+                elif counter == 8 :
+                    # 空格点地移动人物
+                    pydirectinput.moveTo(1292, 251)
+                    pydirectinput.press('space')
+                    time.sleep(1)
+                elif counter == 12:
+                    # 空格点地移动人物
+                    pydirectinput.moveTo(1292, 251)
+                    pydirectinput.press('space')
+                    time.sleep(1)
+                counter += 1
+
+                for a in range(10):
+                    pydirectinput.moveTo(x, y)
+                    time.sleep(self.laytime)
+                    # 终止程序
+                    pos = pyautogui.position()
+                    if (pos.x, pos.y) == (x, y):
+                        pass
+                    else:
+                        break
+
+                    pydirectinput.click(button="right")
+                    # 移动到第一个野兽
+                    pydirectinput.moveTo(130, 304)
+                    time.sleep(self.laytime)
+                    # 终止程序
+                    pos = pyautogui.position()
+                    if (pos.x, pos.y) == (130, 304):
+                        pass
+                    else:
+                        break
+                    # 点野兽
+                    pydirectinput.click(button="left")
+                    time.sleep(self.laytime)
+
+                    pydirectinput.moveTo(970, 573)
+                    time.sleep(b)
+                    # 终止程序
+                    pos = pyautogui.position()
+                    if pos.x == 970 and pos.y == 573:
+                        pass
+                    else:
+                        break
+                    pydirectinput.click(button="left")
+                    time.sleep(self.laytime)
+
+
+            self.pushButton_15.setEnabled(True)
+
+
+    def catch_yellow_beast(self):
+        #被self.catch_yellow_beast_timer引用
+        # 用于3s计时器触发，触发计时器后调用catch_yellow_beast2执行抓荒野兽操作
+        self.pushButton_15.setEnabled(False)  # 禁用按钮
+        self.catch_beast_timer.start(1000)  # 每秒触发一次
+
+
+
+
+
+
+
+
 
     def is_if_have_empty_modifier(self):
-        for line in self.item_info:
-            # 检查物品名是否在该行
-            if self.item_name_text in line:
-                line = line.strip()  # 移除首尾空白字符
-                index = line.find(self.item_name_text)
-                # 检查前面是否有非空白字符
-                front_empty = (index == 0)
-                # 检查后面是否有非空白字符
-                back_empty = (index + len(self.item_name_text) == len(line))
-                if front_empty:  # 确认空前
-                    return '空前'
-                elif back_empty:  # 不空前就检查是否空后
-                    return '空后'
-                else:  # 既不空前也不空后
-                    return '改造'
+        #检查有几条前缀几条后缀
 
-        print('is_if_have_empty_modifier未找到物品名')
+        Pre_count = self.item_info.count('{ 前缀')#{ Prefix Modifier
+        self.Prefix_Modifier = Pre_count
+        Suf_count = self.item_info.count('{ 后缀')#{ Suffix Modifier
+        self.Suffix_Modifier = Suf_count
+
+        if self.Prefix_Modifier == 0:
+
+            return '空前'
+        if self.Suffix_Modifier ==0:
+
+            return '空后'
+
+        return '改造'
+
     def if_need_zengfu(self):
         pass
 
@@ -766,9 +1157,19 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         # QMessageBox.information(None, "Title", "检测到鼠标离开工作区域,程序中断")
         pyautogui.keyUp('shift')
         pyautogui.keyUp('ctrl')
+        self.Prefix_Modifier = 0
+        self.Suffix_Modifier = 0
+        self.Message = "开始"
+        self.item_info = ''
+        self.mods_info = []
+        # 洗多件装备时，控制位置的变量
+        self.items_position = 0
+
         self.items_position = 0
         self.IsFirstGaiZao = False
         self.kill_window = True
+        # self.Message = '开始'
+        return True
 
     def twoXtwelve(self, posi, callback ):
         """
@@ -781,6 +1182,7 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
             pyautogui.keyUp('shift')
             pyautogui.keyUp('ctrl')
             self.IsFirstGaiZao = False
+
         else:
             # 鼠标移动，点击
             # 通过全局变量self.items_position控制鼠标点击位置
@@ -808,6 +1210,7 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
     def oneXsix(self,posi,callback):
         if self.items_position == len(posi):
             self.items_position = 0
+
         else:
             # 鼠标移动，点击
             # 通过全局变量self.items_position控制鼠标点击位置
@@ -875,10 +1278,20 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         :return:
         """
         # 从目标词缀池中抽词缀
+        if self.mods_info:
+            pass
+        else:
+            self.Message = '词缀池获取失败'
+            print(self.Message)
+            return False
+
         for mod in self.mods_info:
             if mod in self.item_info:
                 self.label_4.setText(self.item_info + mod)
-                return True
+                self.Message = '含有目标词缀'
+                # self.aim_modifity_number +=1
+                return False
+        self.Message = '没有目标词缀'
         #for结束没true， 返回false
         return False
     def check_yaoji(self):
@@ -904,20 +1317,38 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         """
         cb.copy('111')
         pydirectinput.moveTo(self.item_x, self.item_y)
-        time.sleep(0.05)
+        time.sleep(0.1)
         # print('time.sleep')
-        self.simulate_keyboard_ctrl_c()
+        self.simulate_keyboard_ctrl_alt_c()
         time.sleep(0.05)
 
         #从剪贴板黏贴值至item_info
         self.item_info = cb.paste()
+        if self.item_info == '111':
+            print('尝试再次获取物品信息1')
+            time.sleep(0.5)
+            self.simulate_keyboard_ctrl_alt_c()
+            time.sleep(0.05)
+            self.item_info = cb.paste()
+            if self.item_info == '111':
+                print('尝试再次获取物品信息2')
+                time.sleep(0.5)
+                self.simulate_keyboard_ctrl_alt_c()
+                time.sleep(0.05)
+                self.item_info = cb.paste()
+                if self.item_info == '111':
+                    self.Message = '获取物品信息失败'
+                    print('获取物品信息失败')
+                    return False
+        self.Message = '获取物品信息成功'
+        return False
 
-    def simulate_keyboard_ctrl_c(self):
+    def simulate_keyboard_ctrl_alt_c(self):
         """
         用于复制的函数
         :return:
         """
-        pyautogui.hotkey("ctrl", "c")
+        pyautogui.hotkey("ctrl", "alt", "c")
         time.sleep(random.randint(8, 13) * 0.01)
 
     def loadText(self, target_key):
@@ -946,6 +1377,27 @@ class pages_window(untitled.Ui_MainWindow, QMainWindow):
         # 调用类方法保存值
         data = {'alteration': text}
         save_text.save_data(data)
+    def scouring_transmutation_regal_Save(self):
+        """
+        保存改造位置，当改造位置改变时触发
+        将id与内容保存下来
+        :return:
+        """
+        # 获取文本作为值
+        text_scouring = self.scouring.toPlainText()
+        text_transmutation = self.transmutation.toPlainText()
+        text_regal = self.regal.toPlainText()
+        # 初始化保存数据的类，并给出键
+        save_text = JsonDataSaver("DataFile")
+        # 调用类方法保存值
+        data_scouring = {'scouring': text_scouring}
+        save_text.save_data(data_scouring)
+
+        data_transmutation = {'transmutation': text_transmutation}
+        save_text.save_data(data_transmutation)
+
+        data_regal = {'regal': text_regal}
+        save_text.save_data(data_regal)
 
     def augmentationSave(self):
         """
